@@ -1,0 +1,91 @@
+ds_name,instances,metric,mean_per_round,rounds,std_per_round
+AVLTree,1000,comparisons,12144.6,5,12.973048986263793
+AVLTree,2000,comparisons,27017.2,5,55.98839165398485
+AVLTree,3000,comparisons,42823.2,5,22.07260745811423
+AVLTree,4000,comparisons,59340.4,5,56.73006257708518
+AVLTree,5000,comparisons,76141.4,5,67.89550795155745
+AVLTree,6000,comparisons,93739.0,5,84.87638069569178
+AVLTree,7000,comparisons,111567.6,5,30.899838187278586
+AVLTree,8000,comparisons,129287.0,5,52.98584716695582
+AVLTree,9000,comparisons,147415.0,5,29.16333314283537
+AVLTree,10000,comparisons,166138.6,5,38.64324002979046
+"ArrayLinkedList(def=-1, sorted)",1000,comparisons,922804.2,5,3940.7972797392154
+"ArrayLinkedList(def=-1, sorted)",2000,comparisons,3695049.4,5,3265.6850429886836
+"ArrayLinkedList(def=-1, sorted)",3000,comparisons,8304908.0,5,12724.610544138473
+"ArrayLinkedList(def=-1, sorted)",4000,comparisons,14758135.6,5,62183.79215117071
+"ArrayLinkedList(def=-1, sorted)",5000,comparisons,23050838.2,5,37063.65913128384
+"ArrayLinkedList(def=-1, sorted)",6000,comparisons,33209245.4,5,36620.761943192825
+"ArrayLinkedList(def=-1, sorted)",7000,comparisons,45227543.4,5,121036.98882490426
+"ArrayLinkedList(def=-1, sorted)",8000,comparisons,59063670.8,5,67926.12520746344
+"ArrayLinkedList(def=-1, sorted)",9000,comparisons,74710632.4,5,110558.38487107163
+"ArrayLinkedList(def=-1, sorted)",10000,comparisons,92336365.8,5,171812.63211620966
+"ArrayLinkedList(def=-1, unsorted)",1000,comparisons,671131.2,5,5033.679936189825
+"ArrayLinkedList(def=-1, unsorted)",2000,comparisons,2697107.4,5,15740.603333417688
+"ArrayLinkedList(def=-1, unsorted)",3000,comparisons,6047076.6,5,18750.523214033255
+"ArrayLinkedList(def=-1, unsorted)",4000,comparisons,10749084.8,5,52657.72426909466
+"ArrayLinkedList(def=-1, unsorted)",5000,comparisons,16817779.6,5,45513.992368281644
+"ArrayLinkedList(def=-1, unsorted)",6000,comparisons,24193034.4,5,130534.65074569281
+"ArrayLinkedList(def=-1, unsorted)",7000,comparisons,32911134.4,5,32650.45018525778
+"ArrayLinkedList(def=-1, unsorted)",8000,comparisons,43004998.4,5,125009.55607192595
+"ArrayLinkedList(def=-1, unsorted)",9000,comparisons,54469473.0,5,130252.72128251294
+"ArrayLinkedList(def=-1, unsorted)",10000,comparisons,67216528.4,5,146237.6153108358
+HashTable(100|chaining|linear|poly31),1000,comparisons,6560.8,5,33.28963802747035
+HashTable(100|chaining|linear|poly31),2000,comparisons,26533.8,5,69.69720223940126
+HashTable(100|chaining|linear|poly31),3000,comparisons,59733.4,5,332.4985714255025
+HashTable(100|chaining|linear|poly31),4000,comparisons,106565.2,5,371.6735126424804
+HashTable(100|chaining|linear|poly31),5000,comparisons,166955.0,5,500.78338630589576
+HashTable(100|chaining|linear|poly31),6000,comparisons,240871.8,5,457.4305411753789
+HashTable(100|chaining|linear|poly31),7000,comparisons,327973.0,5,580.5824661492974
+HashTable(100|chaining|linear|poly31),8000,comparisons,427470.8,5,899.0896507023091
+HashTable(100|chaining|linear|poly31),9000,comparisons,541664.6,5,1355.6811203229172
+HashTable(100|chaining|linear|poly31),10000,comparisons,669860.4,5,1046.0761444560335
+HashTable(100|chaining|quadratic|poly31),1000,comparisons,6552.8,5,42.32847741178508
+HashTable(100|chaining|quadratic|poly31),2000,comparisons,26544.6,5,154.04804445367037
+HashTable(100|chaining|quadratic|poly31),3000,comparisons,59755.2,5,259.04960914851813
+HashTable(100|chaining|quadratic|poly31),4000,comparisons,106526.2,5,362.58474871400756
+HashTable(100|chaining|quadratic|poly31),5000,comparisons,166292.6,5,464.46183912136416
+HashTable(100|chaining|quadratic|poly31),6000,comparisons,240203.4,5,711.2111500813243
+HashTable(100|chaining|quadratic|poly31),7000,comparisons,327429.2,5,897.7169375699671
+HashTable(100|chaining|quadratic|poly31),8000,comparisons,428562.8,5,1717.2340259848104
+HashTable(100|chaining|quadratic|poly31),9000,comparisons,541430.2,5,1898.602433370399
+HashTable(100|chaining|quadratic|poly31),10000,comparisons,670262.4,5,858.86483220586
+HashTable(150|chaining|linear|poly31),1000,comparisons,7168.4,5,61.47601158175439
+HashTable(150|chaining|linear|poly31),2000,comparisons,29012.4,5,93.84721626132551
+HashTable(150|chaining|linear|poly31),3000,comparisons,65003.2,5,457.3491007971919
+HashTable(150|chaining|linear|poly31),4000,comparisons,115189.4,5,162.87971021585224
+HashTable(150|chaining|linear|poly31),5000,comparisons,178225.2,5,347.418623565289
+HashTable(150|chaining|linear|poly31),6000,comparisons,252555.4,5,527.3033282656198
+HashTable(150|chaining|linear|poly31),7000,comparisons,337424.4,5,795.5675961224161
+HashTable(150|chaining|linear|poly31),8000,comparisons,431863.0,5,739.4677139672833
+HashTable(150|chaining|linear|poly31),9000,comparisons,534080.8,5,2576.759146680186
+HashTable(150|chaining|linear|poly31),10000,comparisons,644554.2,5,1303.6014344883179
+HashTable(150|chaining|quadratic|poly31),1000,comparisons,7142.4,5,114.52641616675167
+HashTable(150|chaining|quadratic|poly31),2000,comparisons,28888.4,5,181.2396203924517
+HashTable(150|chaining|quadratic|poly31),3000,comparisons,65012.4,5,284.0471791797975
+HashTable(150|chaining|quadratic|poly31),4000,comparisons,115187.6,5,367.27210621009596
+HashTable(150|chaining|quadratic|poly31),5000,comparisons,177574.6,5,969.6740689530684
+HashTable(150|chaining|quadratic|poly31),6000,comparisons,252307.2,5,362.4944137500604
+HashTable(150|chaining|quadratic|poly31),7000,comparisons,337127.8,5,792.4599043484786
+HashTable(150|chaining|quadratic|poly31),8000,comparisons,432102.6,5,1307.7026802756045
+HashTable(150|chaining|quadratic|poly31),9000,comparisons,536196.2,5,889.3175473361582
+HashTable(150|chaining|quadratic|poly31),10000,comparisons,645693.2,5,1301.8136195323816
+HashTable(50|chaining|linear|poly31),1000,comparisons,13136.0,5,83.4715520402011
+HashTable(50|chaining|linear|poly31),2000,comparisons,53212.0,5,165.81164012215788
+HashTable(50|chaining|linear|poly31),3000,comparisons,119906.4,5,538.8541546652489
+HashTable(50|chaining|linear|poly31),4000,comparisons,213448.0,5,517.9087757510969
+HashTable(50|chaining|linear|poly31),5000,comparisons,335136.0,5,517.7610452708856
+HashTable(50|chaining|linear|poly31),6000,comparisons,482586.0,5,932.7880252233088
+HashTable(50|chaining|linear|poly31),7000,comparisons,657022.2,5,673.896653797895
+HashTable(50|chaining|linear|poly31),8000,comparisons,857934.4,5,2982.5584319506634
+HashTable(50|chaining|linear|poly31),9000,comparisons,1086797.0,5,1779.795634335583
+HashTable(50|chaining|linear|poly31),10000,comparisons,1343975.0,5,3539.1349931868945
+HashTable(50|chaining|quadratic|poly31),1000,comparisons,13154.2,5,100.26066028108932
+HashTable(50|chaining|quadratic|poly31),2000,comparisons,53343.4,5,226.72516402022958
+HashTable(50|chaining|quadratic|poly31),3000,comparisons,119843.4,5,525.3306577766045
+HashTable(50|chaining|quadratic|poly31),4000,comparisons,214413.4,5,621.1737277123043
+HashTable(50|chaining|quadratic|poly31),5000,comparisons,335402.2,5,1565.0273799521847
+HashTable(50|chaining|quadratic|poly31),6000,comparisons,481812.2,5,981.1165578054424
+HashTable(50|chaining|quadratic|poly31),7000,comparisons,655304.0,5,1912.681625362674
+HashTable(50|chaining|quadratic|poly31),8000,comparisons,858073.6,5,1965.744464573155
+HashTable(50|chaining|quadratic|poly31),9000,comparisons,1086366.4,5,1823.6491713046125
+HashTable(50|chaining|quadratic|poly31),10000,comparisons,1342229.4,5,3342.132597608898

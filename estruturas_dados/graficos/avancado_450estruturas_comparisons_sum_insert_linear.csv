@@ -1,0 +1,91 @@
+ds_name,instances,metric,mean_per_round,rounds,std_per_round
+AVLTree,1000,comparisons,8831.0,5,0.0
+AVLTree,2000,comparisons,19687.0,5,0.0
+AVLTree,3000,comparisons,31220.0,5,0.0
+AVLTree,4000,comparisons,43308.0,5,0.0
+AVLTree,5000,comparisons,55600.0,5,0.0
+AVLTree,6000,comparisons,68483.0,5,0.0
+AVLTree,7000,comparisons,81490.0,5,0.0
+AVLTree,8000,comparisons,94452.0,5,0.0
+AVLTree,9000,comparisons,107741.0,5,0.0
+AVLTree,10000,comparisons,121482.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",1000,comparisons,752931.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",2000,comparisons,3005375.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",3000,comparisons,6761719.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",4000,comparisons,12010885.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",5000,comparisons,18765221.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",6000,comparisons,27023865.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",7000,comparisons,36768131.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",8000,comparisons,48020775.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",9000,comparisons,60787611.0,5,0.0
+"ArrayLinkedList(def=-1, sorted)",10000,comparisons,75032577.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",1000,comparisons,499500.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",2000,comparisons,1999000.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",3000,comparisons,4498500.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",4000,comparisons,7998000.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",5000,comparisons,12497500.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",6000,comparisons,17997000.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",7000,comparisons,24496500.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",8000,comparisons,31996000.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",9000,comparisons,40495500.0,5,0.0
+"ArrayLinkedList(def=-1, unsorted)",10000,comparisons,49995000.0,5,0.0
+HashTable(100|chaining|linear|poly31),1000,comparisons,4604.0,5,0.0
+HashTable(100|chaining|linear|poly31),2000,comparisons,19204.0,5,0.0
+HashTable(100|chaining|linear|poly31),3000,comparisons,43744.0,5,0.0
+HashTable(100|chaining|linear|poly31),4000,comparisons,78205.0,5,0.0
+HashTable(100|chaining|linear|poly31),5000,comparisons,122692.0,5,0.0
+HashTable(100|chaining|linear|poly31),6000,comparisons,177197.0,5,0.0
+HashTable(100|chaining|linear|poly31),7000,comparisons,241650.0,5,0.0
+HashTable(100|chaining|linear|poly31),8000,comparisons,316096.0,5,0.0
+HashTable(100|chaining|linear|poly31),9000,comparisons,400604.0,5,0.0
+HashTable(100|chaining|linear|poly31),10000,comparisons,495260.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),1000,comparisons,4604.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),2000,comparisons,19204.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),3000,comparisons,43744.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),4000,comparisons,78205.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),5000,comparisons,122692.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),6000,comparisons,177197.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),7000,comparisons,241650.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),8000,comparisons,316096.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),9000,comparisons,400604.0,5,0.0
+HashTable(100|chaining|quadratic|poly31),10000,comparisons,495260.0,5,0.0
+HashTable(150|chaining|linear|poly31),1000,comparisons,5042.0,5,0.0
+HashTable(150|chaining|linear|poly31),2000,comparisons,21019.0,5,0.0
+HashTable(150|chaining|linear|poly31),3000,comparisons,47646.0,5,0.0
+HashTable(150|chaining|linear|poly31),4000,comparisons,84449.0,5,0.0
+HashTable(150|chaining|linear|poly31),5000,comparisons,130792.0,5,0.0
+HashTable(150|chaining|linear|poly31),6000,comparisons,185928.0,5,0.0
+HashTable(150|chaining|linear|poly31),7000,comparisons,249006.0,5,0.0
+HashTable(150|chaining|linear|poly31),8000,comparisons,319134.0,5,0.0
+HashTable(150|chaining|linear|poly31),9000,comparisons,395414.0,5,0.0
+HashTable(150|chaining|linear|poly31),10000,comparisons,476979.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),1000,comparisons,5042.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),2000,comparisons,21019.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),3000,comparisons,47646.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),4000,comparisons,84449.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),5000,comparisons,130792.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),6000,comparisons,185928.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),7000,comparisons,249006.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),8000,comparisons,319134.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),9000,comparisons,395414.0,5,0.0
+HashTable(150|chaining|quadratic|poly31),10000,comparisons,476979.0,5,0.0
+HashTable(50|chaining|linear|poly31),1000,comparisons,9526.0,5,0.0
+HashTable(50|chaining|linear|poly31),2000,comparisons,39024.0,5,0.0
+HashTable(50|chaining|linear|poly31),3000,comparisons,88524.0,5,0.0
+HashTable(50|chaining|linear|poly31),4000,comparisons,158026.0,5,0.0
+HashTable(50|chaining|linear|poly31),5000,comparisons,247520.0,5,0.0
+HashTable(50|chaining|linear|poly31),6000,comparisons,357021.0,5,0.0
+HashTable(50|chaining|linear|poly31),7000,comparisons,486524.0,5,0.0
+HashTable(50|chaining|linear|poly31),8000,comparisons,636024.0,5,0.0
+HashTable(50|chaining|linear|poly31),9000,comparisons,805526.0,5,0.0
+HashTable(50|chaining|linear|poly31),10000,comparisons,995040.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),1000,comparisons,9526.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),2000,comparisons,39024.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),3000,comparisons,88524.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),4000,comparisons,158026.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),5000,comparisons,247520.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),6000,comparisons,357021.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),7000,comparisons,486524.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),8000,comparisons,636024.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),9000,comparisons,805526.0,5,0.0
+HashTable(50|chaining|quadratic|poly31),10000,comparisons,995040.0,5,0.0

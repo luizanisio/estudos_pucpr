@@ -1,0 +1,91 @@
+ds_name,instances,metric,mean_per_round,rounds,std_per_round
+AVLTree,1000,wall_time_ms,81.74825880000007,5,1.6796350240170463
+AVLTree,2000,wall_time_ms,185.05709280000002,5,23.751463189732537
+AVLTree,3000,wall_time_ms,257.3827764000001,5,4.674866812154178
+AVLTree,4000,wall_time_ms,353.18958959999975,5,9.443661403686313
+AVLTree,5000,wall_time_ms,444.69117760000034,5,5.2365387830708
+AVLTree,6000,wall_time_ms,554.0293881999996,5,45.07783325198313
+AVLTree,7000,wall_time_ms,636.7966035999991,5,6.47918532360078
+AVLTree,8000,wall_time_ms,734.2597816000005,5,32.24242797735089
+AVLTree,9000,wall_time_ms,807.6458829999979,5,8.221403175329622
+AVLTree,10000,wall_time_ms,914.9074374000002,5,3.044771839973226
+"ArrayLinkedList(def=-1, sorted)",1000,wall_time_ms,532.2518314000001,5,17.09095361991855
+"ArrayLinkedList(def=-1, sorted)",2000,wall_time_ms,2141.6010960000012,5,48.373437742060574
+"ArrayLinkedList(def=-1, sorted)",3000,wall_time_ms,4806.502042199997,5,12.38239855023495
+"ArrayLinkedList(def=-1, sorted)",4000,wall_time_ms,8573.257188000012,5,152.6221910316233
+"ArrayLinkedList(def=-1, sorted)",5000,wall_time_ms,13674.366804200003,5,126.9317400626827
+"ArrayLinkedList(def=-1, sorted)",6000,wall_time_ms,19574.3438096,5,130.26057931755005
+"ArrayLinkedList(def=-1, sorted)",7000,wall_time_ms,26999.634862000024,5,448.21943593760204
+"ArrayLinkedList(def=-1, sorted)",8000,wall_time_ms,35149.062828800015,5,1248.3480289171005
+"ArrayLinkedList(def=-1, sorted)",9000,wall_time_ms,44404.793580400095,5,890.1339323174815
+"ArrayLinkedList(def=-1, sorted)",10000,wall_time_ms,54281.503317000184,5,343.4711582834548
+"ArrayLinkedList(def=-1, unsorted)",1000,wall_time_ms,388.2654994,5,19.734685187816957
+"ArrayLinkedList(def=-1, unsorted)",2000,wall_time_ms,1558.3364857999998,5,51.25981673820509
+"ArrayLinkedList(def=-1, unsorted)",3000,wall_time_ms,3600.1585865999978,5,59.62021843044811
+"ArrayLinkedList(def=-1, unsorted)",4000,wall_time_ms,6193.9915352000025,5,70.45386542938121
+"ArrayLinkedList(def=-1, unsorted)",5000,wall_time_ms,9792.689061399999,5,266.8092506503262
+"ArrayLinkedList(def=-1, unsorted)",6000,wall_time_ms,14002.27911339997,5,108.57103817982323
+"ArrayLinkedList(def=-1, unsorted)",7000,wall_time_ms,19108.519092800016,5,163.82281685136286
+"ArrayLinkedList(def=-1, unsorted)",8000,wall_time_ms,25009.237560200014,5,227.72139903023313
+"ArrayLinkedList(def=-1, unsorted)",9000,wall_time_ms,31513.68554480002,5,435.6875148416568
+"ArrayLinkedList(def=-1, unsorted)",10000,wall_time_ms,38824.6881736,5,631.8220445930983
+HashTable(100|chaining|linear|poly31),1000,wall_time_ms,90.23708020000004,5,17.114059859201884
+HashTable(100|chaining|linear|poly31),2000,wall_time_ms,149.30433860000022,5,4.609778883535834
+HashTable(100|chaining|linear|poly31),3000,wall_time_ms,220.80341979999952,5,6.7151384200425035
+HashTable(100|chaining|linear|poly31),4000,wall_time_ms,300.6166717999998,5,9.651261767353992
+HashTable(100|chaining|linear|poly31),5000,wall_time_ms,389.22782559999985,5,5.095978903026648
+HashTable(100|chaining|linear|poly31),6000,wall_time_ms,475.1200127999999,5,6.110624836565175
+HashTable(100|chaining|linear|poly31),7000,wall_time_ms,580.135851400001,5,15.627516546268652
+HashTable(100|chaining|linear|poly31),8000,wall_time_ms,664.8463458000002,5,20.875058027954285
+HashTable(100|chaining|linear|poly31),9000,wall_time_ms,756.8022541999993,5,15.198834497496025
+HashTable(100|chaining|linear|poly31),10000,wall_time_ms,859.0305918000022,5,15.932982122625887
+HashTable(100|chaining|quadratic|poly31),1000,wall_time_ms,78.79750199999992,5,4.834446227107618
+HashTable(100|chaining|quadratic|poly31),2000,wall_time_ms,155.0915697999999,5,4.720687335836344
+HashTable(100|chaining|quadratic|poly31),3000,wall_time_ms,234.01808379999997,5,3.266347563371909
+HashTable(100|chaining|quadratic|poly31),4000,wall_time_ms,321.5167318000001,5,9.46730966751312
+HashTable(100|chaining|quadratic|poly31),5000,wall_time_ms,460.99401120000067,5,65.03638322548369
+HashTable(100|chaining|quadratic|poly31),6000,wall_time_ms,504.70145040000006,5,25.683250198650427
+HashTable(100|chaining|quadratic|poly31),7000,wall_time_ms,660.6535438000008,5,51.82368655937878
+HashTable(100|chaining|quadratic|poly31),8000,wall_time_ms,735.8199831999995,5,78.85951454653724
+HashTable(100|chaining|quadratic|poly31),9000,wall_time_ms,796.4078750000001,5,60.44903531847006
+HashTable(100|chaining|quadratic|poly31),10000,wall_time_ms,893.1191591999989,5,39.56011239697908
+HashTable(150|chaining|linear|poly31),1000,wall_time_ms,72.79772080000005,5,3.283962298948975
+HashTable(150|chaining|linear|poly31),2000,wall_time_ms,150.57012600000016,5,9.542031325950656
+HashTable(150|chaining|linear|poly31),3000,wall_time_ms,227.80533259999964,5,4.684269925911045
+HashTable(150|chaining|linear|poly31),4000,wall_time_ms,317.72826720000023,5,13.140508887330515
+HashTable(150|chaining|linear|poly31),5000,wall_time_ms,388.1355653999998,5,4.91416461892784
+HashTable(150|chaining|linear|poly31),6000,wall_time_ms,479.2785482000004,5,5.777408622631557
+HashTable(150|chaining|linear|poly31),7000,wall_time_ms,571.5046003999998,5,16.447954031491545
+HashTable(150|chaining|linear|poly31),8000,wall_time_ms,649.4901953999986,5,10.8169797601928
+HashTable(150|chaining|linear|poly31),9000,wall_time_ms,766.0675775999995,5,22.863280167660236
+HashTable(150|chaining|linear|poly31),10000,wall_time_ms,860.9685777999988,5,20.5023992812303
+HashTable(150|chaining|quadratic|poly31),1000,wall_time_ms,70.4957206,5,0.5321943228735548
+HashTable(150|chaining|quadratic|poly31),2000,wall_time_ms,145.6844934,5,1.3584249974949203
+HashTable(150|chaining|quadratic|poly31),3000,wall_time_ms,233.06647179999996,5,5.996539081735927
+HashTable(150|chaining|quadratic|poly31),4000,wall_time_ms,305.58654299999995,5,3.021223316065327
+HashTable(150|chaining|quadratic|poly31),5000,wall_time_ms,388.18356440000025,5,10.752916248897247
+HashTable(150|chaining|quadratic|poly31),6000,wall_time_ms,479.1183283999999,5,2.6190565303934243
+HashTable(150|chaining|quadratic|poly31),7000,wall_time_ms,576.7811675999998,5,6.225639113274422
+HashTable(150|chaining|quadratic|poly31),8000,wall_time_ms,673.5385655999999,5,8.987367938731532
+HashTable(150|chaining|quadratic|poly31),9000,wall_time_ms,753.7989301999999,5,11.128020098359492
+HashTable(150|chaining|quadratic|poly31),10000,wall_time_ms,817.7455496000008,5,13.076893530547586
+HashTable(50|chaining|linear|poly31),1000,wall_time_ms,71.9693358,5,0.5319563356974911
+HashTable(50|chaining|linear|poly31),2000,wall_time_ms,147.36749759999995,5,1.7820384282707276
+HashTable(50|chaining|linear|poly31),3000,wall_time_ms,230.83076280000006,5,2.345904050357743
+HashTable(50|chaining|linear|poly31),4000,wall_time_ms,334.8240130000002,5,15.385879512155112
+HashTable(50|chaining|linear|poly31),5000,wall_time_ms,438.5684348000003,5,15.856632580645572
+HashTable(50|chaining|linear|poly31),6000,wall_time_ms,528.2061682000003,5,9.583241817954432
+HashTable(50|chaining|linear|poly31),7000,wall_time_ms,661.9091904000005,5,46.464873833805605
+HashTable(50|chaining|linear|poly31),8000,wall_time_ms,743.4411677999999,5,11.668501591393541
+HashTable(50|chaining|linear|poly31),9000,wall_time_ms,876.1931756000016,5,19.610364350708167
+HashTable(50|chaining|linear|poly31),10000,wall_time_ms,1192.7739277999997,5,334.7120611303938
+HashTable(50|chaining|quadratic|poly31),1000,wall_time_ms,72.85426159999996,5,0.6440998731413771
+HashTable(50|chaining|quadratic|poly31),2000,wall_time_ms,146.99340820000015,5,1.7725204570744006
+HashTable(50|chaining|quadratic|poly31),3000,wall_time_ms,227.50388619999984,5,1.5664819681116948
+HashTable(50|chaining|quadratic|poly31),4000,wall_time_ms,315.16895260000007,5,2.368561154011848
+HashTable(50|chaining|quadratic|poly31),5000,wall_time_ms,404.46523800000034,5,3.19305351562408
+HashTable(50|chaining|quadratic|poly31),6000,wall_time_ms,495.6115646000013,5,3.4143680232018943
+HashTable(50|chaining|quadratic|poly31),7000,wall_time_ms,599.4725659999998,5,6.817224425952408
+HashTable(50|chaining|quadratic|poly31),8000,wall_time_ms,787.7101184000015,5,101.2593678978281
+HashTable(50|chaining|quadratic|poly31),9000,wall_time_ms,852.5108321999987,5,6.287852157960024
+HashTable(50|chaining|quadratic|poly31),10000,wall_time_ms,1019.8402955999994,5,40.583537314373416
