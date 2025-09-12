@@ -159,7 +159,7 @@ Gerados apenas para as **6 variações de Hash Tables** do experimento:
 **8. Colisões de Hash**
 - Número total de colisões detectadas
 - Compara eficácia entre sondagem linear vs. quadrática
-- Mostra impacto do tamanho da tabela (M=50, M=100, M=1000)
+- Mostra impacto do tamanho da tabela (M=50, M=100, M=150)
 
 **9. Comprimento de Clusters**
 - Tamanho médio dos clusters formados
@@ -314,7 +314,7 @@ Este experimento fornece uma base sólida para:
 - **Buscas**: AVL Tree e Hash Tables superiores; Array Lists lineares
 
 **Hash Tables Específicas:**
-- **Colisões**: Tabelas maiores (M=1000) com menos colisões que pequenas (M=50)
+- **Colisões**: Tabelas maiores (M=150) com menos colisões que pequenas (M=50)
 - **Clusters**: Sondagem linear mostra clustering primário; quadrática reduz problema
 - **Probes**: Eficiência de sondagem varia significativamente entre linear/quadrática
 - **Sondagem Linear vs Quadrática**: Trade-off entre simplicidade e redução de clustering
