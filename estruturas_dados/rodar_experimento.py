@@ -5,6 +5,15 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from util_estrutura import AVLTreeDS, HashTableDS, ArrayLinkedList, BaseDataStructure
 from util_graficos import GraficosMetricas
 
+"""
+MODIFICAÇÕES NA GERAÇÃO DE GRÁFICOS:
+- Cada gráfico agora mostra UMA métrica comparando TODAS as estruturas
+- 5 gráficos principais: comparisons, node_visits, wall_time_ms, mem_moves, proc_time_ms
+- 2 gráficos de operações específicas: inserções e buscas (comparisons)
+- 3 gráficos específicos para Hash Tables: hash_collisions, hash_cluster_len, probes
+- Total: 10 gráficos individuais
+"""
+
 def gerar_experimento_completo():
     """
     Gera experimento completo comparando diferentes estruturas de dados
@@ -20,13 +29,13 @@ def gerar_experimento_completo():
     # Definição das estruturas a serem testadas
     estruturas = [
         ("AVL Tree", lambda: AVLTreeDS()),
-        ("Hash Table M=50 Quadratic", lambda: HashTableDS(M=50, probing='quadratic')), 
-        ("Hash Table M=100 Quadratic", lambda: HashTableDS(M=100, probing='quadratic')), 
-        ("Hash Table M=1000 Quadratic", lambda: HashTableDS(M=1000, probing='quadratic')),
-        ("Hash Table M=100 Linear", lambda: HashTableDS(M=100, probing='linear')), 
-        ("Hash Table M=50 Linear", lambda: HashTableDS(M=50, probing='linear')), 
-        ("Hash Table M=1000 Linear", lambda: HashTableDS(M=1000, probing='linear')),
-        ("Array LinkedList Unsorted", lambda: ArrayLinkedList()), 
+        ("Hash Table M=50 Quadratic", lambda: HashTableDS(M=50, probing='quadratic')),
+        ("Hash Table M=100 Quadratic", lambda: HashTableDS(M=100, probing='quadratic')),
+        ("Hash Table M=150 Quadratic", lambda: HashTableDS(M=150, probing='quadratic')),
+        ("Hash Table M=50 Linear", lambda: HashTableDS(M=50, probing='linear')),
+        ("Hash Table M=100 Linear", lambda: HashTableDS(M=100, probing='linear')),
+        ("Hash Table M=150 Linear", lambda: HashTableDS(M=150, probing='linear')),
+        ("Array LinkedList Unsorted", lambda: ArrayLinkedList()),
         ("Array LinkedList Sorted", lambda: ArrayLinkedList(sorted_insert=True))
     ]
     
@@ -75,79 +84,98 @@ def gerar_experimento_completo():
     return lista_estruturas, estruturas
 
 def gerar_graficos_comparativos(lista_estruturas):
-    """Gera diferentes tipos de gráficos comparativos."""
+    """
+    Gera gráficos comparativos com um gráfico por métrica.
+    Cada gráfico compara todas as estruturas para uma única métrica.
+    """
     print("\n📈 GERANDO GRÁFICOS COMPARATIVOS...")
     print("=" * 40)
     
     gm = GraficosMetricas()
-
     caminhos_gerados = []
     
-    # 1. Gráfico geral: Comparações, visitas de nó e tempo
-    print("📊 1. Métricas gerais de eficiência...")
-    caminho1 = gm.plotar_metricas(
-        structures=lista_estruturas,
-        metrics=['comparisons', 'node_visits', 'wall_time_ms'],
-        agg='sum',
-        escala='linear',
-        op_filter=('insert', 'search', 'remove'),
-        titulo_personalizado='Eficiência Geral - Comparações, Visitas e Tempo'
-    )
-    caminhos_gerados.append(caminho1)
+    # Definição das métricas principais para todas as estruturas
+    metricas_principais = [
+        ('comparisons', 'Comparações', ('insert', 'search', 'remove')),
+        ('node_visits', 'Visitas de Nós', ('insert', 'search', 'remove')),
+        ('wall_time_ms', 'Tempo de Execução (ms)', ('insert', 'search', 'remove')),
+        ('mem_moves', 'Movimentações de Memória', ('insert', 'search', 'remove')),
+        ('proc_time_ms', 'Tempo de CPU (ms)', ('insert', 'search', 'remove'))
+    ]
     
-    # 2. Gráfico de movimentações de memória e CPU
-    print("📊 2. Métricas de sistema (CPU e memória)...")
-    caminho2 = gm.plotar_metricas(
-        structures=lista_estruturas,
-        metrics=['mem_moves', 'proc_time_ms'],
-        agg='sum',
-        escala='linear',
-        op_filter=('insert', 'search', 'remove'),
-        titulo_personalizado='Movimentações de Memória e Tempo de CPU'
-    )
-    caminhos_gerados.append(caminho2)
+    # Gera um gráfico por métrica principal
+    print("📊 Gerando gráficos individuais por métrica...")
+    for i, (metrica, titulo_metrica, operacoes) in enumerate(metricas_principais, 1):
+        print(f"  {i}. {titulo_metrica}...")
+        
+        # Gera gráfico comparativo para esta métrica
+        caminho = gm.plotar_metricas(
+            structures=lista_estruturas,
+            metrics=[metrica],  # Uma métrica por gráfico
+            agg='sum',
+            escala='linear',
+            op_filter=operacoes,
+            titulo_personalizado=f'{titulo_metrica} - Comparação entre Estruturas'
+        )
+        caminhos_gerados.append(caminho)
     
-    # 3. Análise específica de inserções
-    print("📊 3. Análise específica - Inserções...")
-    caminho3 = gm.plotar_metricas(
+    # Métricas específicas para análise detalhada de operações
+    print("📊 Gerando gráficos específicos por operação...")
+    
+    # Análise específica de inserções
+    print("  6. Comparações em Inserções...")
+    caminho_insert = gm.plotar_metricas(
         structures=lista_estruturas,
-        metrics=['comparisons', 'node_visits', 'mem_moves'],
+        metrics=['comparisons'],
         agg='sum',
         escala='linear',
         op_filter=('insert',),
-        titulo_personalizado='Eficiência de Inserção - Comparações, Visitas e Movimentações'
+        titulo_personalizado='Comparações - Operações de Inserção'
     )
-    caminhos_gerados.append(caminho3)
+    caminhos_gerados.append(caminho_insert)
     
-    # 4. Análise específica de buscas
-    print("📊 4. Análise específica - Buscas...")
-    caminho4 = gm.plotar_metricas(
+    # Análise específica de buscas
+    print("  7. Comparações em Buscas...")
+    caminho_search = gm.plotar_metricas(
         structures=lista_estruturas,
-        metrics=['comparisons', 'node_visits', 'wall_time_ms'],
+        metrics=['comparisons'],
         agg='sum',
         escala='linear',
         op_filter=('search',),
-        titulo_personalizado='Eficiência de Busca - Comparações, Visitas e Tempo'
+        titulo_personalizado='Comparações - Operações de Busca'
     )
-    caminhos_gerados.append(caminho4)
+    caminhos_gerados.append(caminho_search)
     
-    # 5. Métricas específicas para estruturas Hash
-    print("📊 5. Métricas específicas - Hash Tables...")
+    # Separar estruturas hash para análise específica
     hash_structures = [
-        e for e in lista_estruturas 
+        e for e in lista_estruturas
         if 'HashTable' in e.__class__.__name__
     ]
     
+    # Gráficos específicos para Hash Tables (se existirem)
     if hash_structures:
-        caminho5 = gm.plotar_metricas(
-            structures=hash_structures,
-            metrics=['hash_collisions', 'hash_cluster_len', 'probes'],
-            agg='sum',
-            escala='linear',
-            op_filter=('insert', 'search'),
-            titulo_personalizado='Métricas Específicas - Hash Tables (Colisões, Clusters, Probes)'
-        )
-        caminhos_gerados.append(caminho5)
+        print("📊 Gerando gráficos específicos para Hash Tables...")
+        
+        # Métricas específicas de hash tables
+        metricas_hash = [
+            ('hash_collisions', 'Colisões de Hash', ('insert', 'search')),
+            ('hash_cluster_len', 'Comprimento de Clusters', ('insert', 'search')),
+            ('probes', 'Tentativas de Sondagem', ('insert', 'search'))
+        ]
+        
+        for j, (metrica_hash, titulo_hash, ops_hash) in enumerate(metricas_hash, 8):
+            print(f"  {j}. {titulo_hash}...")
+            
+            # Gera gráfico específico para hash tables
+            caminho_hash = gm.plotar_metricas(
+                structures=hash_structures,  # Apenas hash tables
+                metrics=[metrica_hash],
+                agg='sum',
+                escala='linear',
+                op_filter=ops_hash,
+                titulo_personalizado=f'{titulo_hash} - Hash Tables'
+            )
+            caminhos_gerados.append(caminho_hash)
     
     return caminhos_gerados
 
@@ -176,4 +204,11 @@ if __name__ == "__main__":
     print(f"  - Tamanhos testados: {len(list(range(1000, 10001, 1000)))}")
     print(f"  - Rounds por configuração: 5")
     print(f"  - Total de execuções: {len(lista_estruturas)}")
-    print(f"  - Gráficos gerados: {len(caminhos)}")
+    print(f"  - Gráficos gerados: {len(caminhos)} (um por métrica)")
+    print("  - Métricas principais: 5 gráficos comparando todas as estruturas")
+    print("  - Análises específicas: 2 gráficos de operações individuais")
+    
+    # Contabiliza gráficos de hash tables se existirem
+    hash_count = sum(1 for e in lista_estruturas if 'HashTable' in e.__class__.__name__)
+    if hash_count > 0:
+        print("  - Hash Tables: 3 gráficos específicos (apenas estruturas hash)")

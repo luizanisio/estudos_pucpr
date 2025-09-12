@@ -22,7 +22,7 @@ O experimento analisa **9 estruturas de dados diferentes**:
    - Resolução de colisões por sondagem quadrática
    - Tamanho médio para comparação
 
-4. **Hash Table com Sondagem Quadrática M=1000** (`HashTableDS(M=1000, probing='quadratic')`)
+4. **Hash Table com Sondagem Quadrática M=150** (`HashTableDS(M=150, probing='quadratic')`)
    - Resolução de colisões por sondagem quadrática
    - Tabela grande para reduzir colisões
 
@@ -34,7 +34,7 @@ O experimento analisa **9 estruturas de dados diferentes**:
    - Resolução de colisões por sondagem linear
    - Tamanho médio para comparação
 
-7. **Hash Table com Sondagem Linear M=1000** (`HashTableDS(M=1000, probing='linear')`)
+7. **Hash Table com Sondagem Linear M=150** (`HashTableDS(M=150, probing='linear')`)
    - Resolução de colisões por sondagem linear
    - Tabela grande para análise de performance
 
@@ -82,17 +82,17 @@ Cada estrutura é instrumentada para coletar as seguintes métricas:
 ### 1️⃣ Fase de Preparação
 ```python
 # Inicialização das estruturas com configurações do experimento
-estruturas = [
-    ("AVL Tree", lambda: AVLTreeDS()),
-    ("Hash Table M=50 Quadratic", lambda: HashTableDS(M=50, probing='quadratic')), 
-    ("Hash Table M=100 Quadratic", lambda: HashTableDS(M=100, probing='quadratic')), 
-    ("Hash Table M=1000 Quadratic", lambda: HashTableDS(M=1000, probing='quadratic')),
-    ("Hash Table M=100 Linear", lambda: HashTableDS(M=100, probing='linear')), 
-    ("Hash Table M=50 Linear", lambda: HashTableDS(M=50, probing='linear')), 
-    ("Hash Table M=1000 Linear", lambda: HashTableDS(M=1000, probing='linear')),
-    ("Array LinkedList Unsorted", lambda: ArrayLinkedList()), 
-    ("Array LinkedList Sorted", lambda: ArrayLinkedList(sorted_insert=True))
-]
+    estruturas = [
+        ("AVL Tree", lambda: AVLTreeDS()),
+        ("Hash Table M=50 Quadratic", lambda: HashTableDS(M=50, probing='quadratic')),
+        ("Hash Table M=100 Quadratic", lambda: HashTableDS(M=100, probing='quadratic')),
+        ("Hash Table M=150 Quadratic", lambda: HashTableDS(M=150, probing='quadratic')),
+        ("Hash Table M=50 Linear", lambda: HashTableDS(M=50, probing='linear')),
+        ("Hash Table M=100 Linear", lambda: HashTableDS(M=100, probing='linear')),
+        ("Hash Table M=150 Linear", lambda: HashTableDS(M=150, probing='linear')),
+        ("Array LinkedList Unsorted", lambda: ArrayLinkedList()),
+        ("Array LinkedList Sorted", lambda: ArrayLinkedList(sorted_insert=True))
+    ]
 ```
 
 ### 2️⃣ Fase de Execução
@@ -118,32 +118,56 @@ df_summary = BaseDataStructure.rounds_summary_df(
 
 ## 📈 Visualizações Geradas
 
-O experimento produz **5 tipos de gráficos comparativos**:
+O experimento produz **gráficos individuais por métrica**, facilitando a comparação direta entre estruturas:
 
-### 1️⃣ Gráfico de Eficiência Geral
-- **Métricas**: Comparações, Visitas de Nós, Tempo Total
-- **Operações**: Inserção + Busca + Remoção
-- **Objetivo**: Visão geral da performance
+### 📊 Gráficos Principais (Todas as Estruturas)
 
-### 2️⃣ Gráfico de Sistema (CPU e Memória)
-- **Métricas**: Movimentações de Memória, Tempo de CPU
-- **Operações**: Inserção + Busca + Remoção
-- **Objetivo**: Análise de recursos do sistema
+**1. Comparações** - Operações: Inserção + Busca + Remoção
+- Compara o número total de comparações realizadas por cada estrutura
+- Revela a eficiência algorítmica das diferentes implementações
 
-### 3️⃣ Análise Específica - Inserções
-- **Métricas**: Comparações, Visitas, Movimentações
-- **Operações**: Apenas Inserção
-- **Objetivo**: Performance de construção da estrutura
+**2. Visitas de Nós** - Operações: Inserção + Busca + Remoção  
+- Mede quantos elementos/nós foram acessados durante as operações
+- Importante para análise de complexidade espacial
 
-### 4️⃣ Análise Específica - Buscas
-- **Métricas**: Comparações, Visitas, Tempo
-- **Operações**: Apenas Busca
-- **Objetivo**: Eficiência de consultas
+**3. Tempo de Execução (ms)** - Operações: Inserção + Busca + Remoção
+- Tempo total de parede medido durante a execução
+- Métrica prática para performance real
 
-### 5️⃣ Métricas Específicas - Hash Tables
-- **Métricas**: Colisões, Clusters, Probes
-- **Operações**: Inserção + Busca
-- **Objetivo**: Análise detalhada de hash tables
+**4. Movimentações de Memória** - Operações: Inserção + Busca + Remoção
+- Conta movimentações e realocações de dados na memória
+- Impacto direto na performance do sistema
+
+**5. Tempo de CPU (ms)** - Operações: Inserção + Busca + Remoção
+- Tempo de processamento efetivo da CPU
+- Exclui tempo de espera do sistema
+
+### 🔍 Gráficos de Análise Específica
+
+**6. Comparações - Inserções**
+- Foca exclusivamente na eficiência de inserção
+- Revela diferenças na construção das estruturas
+
+**7. Comparações - Buscas**
+- Analisa apenas operações de busca
+- Crucial para aplicações com muitas consultas
+
+### ⚡ Gráficos Específicos - Hash Tables
+
+Gerados apenas para as **6 variações de Hash Tables** do experimento:
+
+**8. Colisões de Hash**
+- Número total de colisões detectadas
+- Compara eficácia entre sondagem linear vs. quadrática
+- Mostra impacto do tamanho da tabela (M=50, M=100, M=1000)
+
+**9. Comprimento de Clusters**
+- Tamanho médio dos clusters formados
+- Evidencia o problema de clustering primário (linear) vs. secundário (quadrática)
+
+**10. Tentativas de Sondagem**
+- Número de probes necessários para encontrar posições livres
+- Métrica direta de eficiência da resolução de colisões
 
 ## 🔧 Implementação Técnica
 
@@ -240,20 +264,28 @@ Arquivos removidos da pasta de gráficos: 0
     ...
     
 📈 GERANDO GRÁFICOS COMPARATIVOS...
-📊 1. Métricas gerais de eficiência...
-📊 2. Métricas de sistema (CPU e memória)...
-📊 3. Análise específica - Inserções...
-📊 4. Análise específica - Buscas...
-📊 5. Métricas específicas - Hash Tables...
+📊 Gerando gráficos individuais por métrica...
+  1. Comparações...
+  2. Visitas de Nós...
+  3. Tempo de Execução (ms)...
+  4. Movimentações de Memória...
+  5. Tempo de CPU (ms)...
+📊 Gerando gráficos específicos por operação...
+  6. Comparações em Inserções...
+  7. Comparações em Buscas...
+📊 Gerando gráficos específicos para Hash Tables...
+  8. Colisões de Hash...
+  9. Comprimento de Clusters...
+  10. Tentativas de Sondagem...
 
 🎉 EXPERIMENTO CONCLUÍDO COM SUCESSO!
-📈 Gráficos gerados: 5
+📈 Gráficos gerados: 10 (um por métrica)
 📁 Verifique a pasta './graficos' para ver todos os arquivos gerados
 ```
 
 ## 📁 Arquivos Gerados
 
-- **Gráficos**: `./graficos/` - Visualizações em PNG de alta resolução
+- **Gráficos**: `./graficos/` - Visualizações individuais em PNG de alta resolução (um por métrica)
 - **Dados**: Estruturas mantêm histórico completo de todas as execuções
 - **Logs**: Output detalhado do processo de execução
 
@@ -268,11 +300,23 @@ Este experimento fornece uma base sólida para:
 5. **Análise do impacto do tamanho da tabela** hash na performance
 6. **Comparação entre sondagem linear e quadrática** em diferentes contextos
 
-### 📊 Insights Esperados
+### 📊 Insights Esperados por Métrica
 
-- **AVL Tree**: Performance logarítmica consistente, ideal para operações balanceadas
-- **Hash Tables Pequenas (M=50)**: Mais colisões, demonstração clara dos efeitos de clustering
-- **Hash Tables Grandes (M=1000)**: Menos colisões, performance próxima ao ideal O(1)
+**Gráficos Principais (Todas as Estruturas):**
+- **Comparações**: AVL Tree deve mostrar crescimento logarítmico; Hash Tables eficientes com tabelas grandes
+- **Visitas de Nós**: Array Lists mostrarão crescimento linear; AVL Tree logarítmico
+- **Tempo de Execução**: Hash Tables grandes devem superar outras estruturas em operações mistas
+- **Movimentações de Memória**: Array Lists terão mais movimentações em inserções ordenadas
+- **Tempo de CPU**: Correlação direta com complexidade algorítmica de cada estrutura
+
+**Análises Específicas:**
+- **Inserções**: Array Lists não-ordenadas mais rápidas; ordenadas mais custosas
+- **Buscas**: AVL Tree e Hash Tables superiores; Array Lists lineares
+
+**Hash Tables Específicas:**
+- **Colisões**: Tabelas maiores (M=1000) com menos colisões que pequenas (M=50)
+- **Clusters**: Sondagem linear mostra clustering primário; quadrática reduz problema
+- **Probes**: Eficiência de sondagem varia significativamente entre linear/quadrática
 - **Sondagem Linear vs Quadrática**: Trade-off entre simplicidade e redução de clustering
 - **Array Linked Lists**: Demonstração clara da diferença entre inserção ordenada vs. não-ordenada
 
