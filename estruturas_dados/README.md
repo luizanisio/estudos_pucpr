@@ -2,55 +2,87 @@
 
 ## Objetivo do Experimento
 
-Este experimento foi desenvolvido para realizar uma análise comparativa abrangente de diferentes estruturas de dados, medindo sua performance em operações fundamentais (inserção, busca e remoção) através de múltiplas métricas quantitativas.
+Este experimento foi desenvolvido para realizar uma análise comparativa abrangente de diferentes estruturas de dados, medindo sua performance em operações fundamentais (inserção, busca e remoç📊 Configuração do experimento:
+  - 12 estruturas diferentes
+  - 1 AVL Tree
+  - 9 Hash Tables: 3 tamanhos (M=50,100,150) × 3 funções hash (poly31,fnv1a,djb2)
+  - 2 Array Linked Lists (ordenada e não-ordenada)
+  - [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+  - 5 rounds por configuração
+  - Total: 600 execuções
+
+🔧 ESTRUTURA 1/12: AVL Treeavés de múltiplas métricas quantitativas.
 
 ## Metodologia Experimental
 
 ### Estruturas de Dados Analisadas
 
-O experimento analisa **9 estruturas de dados diferentes**:
+O experimento analisa **12 estruturas de dados diferentes**:
 
 1. **AVL Tree** (`AVLTreeDS`)
    - Árvore binária balanceada automaticamente
    - Garante altura logarítmica para todas as operações
 
-2. **Hash Table com Sondagem Quadrática M=50** (`HashTableDS(M=50, probing='quadratic')`)
-   - Resolução de colisões por sondagem quadrática
+2. **Hash Table M=50 poly31** (`HashTableDS(M=50, hash_fn='poly31')`)
+   - Função hash polinomial com base 31
    - Tabela pequena para análise de colisões
+   - Usa encadeamento separado (chaining) para resolução de colisões
 
-3. **Hash Table com Sondagem Quadrática M=100** (`HashTableDS(M=100, probing='quadratic')`)
-   - Resolução de colisões por sondagem quadrática
+3. **Hash Table M=100 poly31** (`HashTableDS(M=100, hash_fn='poly31')`)
+   - Função hash polinomial com base 31
    - Tamanho médio para comparação
+   - Usa encadeamento separado (chaining) para resolução de colisões
 
-4. **Hash Table com Sondagem Quadrática M=150** (`HashTableDS(M=150, probing='quadratic')`)
-   - Resolução de colisões por sondagem quadrática
+4. **Hash Table M=150 poly31** (`HashTableDS(M=150, hash_fn='poly31')`)
+   - Função hash polinomial com base 31
    - Tabela grande para reduzir colisões
+   - Usa encadeamento separado (chaining) para resolução de colisões
 
-5. **Hash Table com Sondagem Linear M=50** (`HashTableDS(M=50, probing='linear')`)
-   - Resolução de colisões por sondagem linear
-   - Tabela pequena para estudar clustering primário
+5. **Hash Table M=50 fnv1a** (`HashTableDS(M=50, hash_fn='fnv1a')`)
+   - Função hash FNV-1a (Fowler–Noll–Vo)
+   - Tabela pequena com hash otimizado
+   - Usa encadeamento separado (chaining) para resolução de colisões
 
-6. **Hash Table com Sondagem Linear M=100** (`HashTableDS(M=100, probing='linear')`)
-   - Resolução de colisões por sondagem linear
+6. **Hash Table M=100 fnv1a** (`HashTableDS(M=100, hash_fn='fnv1a')`)
+   - Função hash FNV-1a (Fowler–Noll–Vo)
    - Tamanho médio para comparação
+   - Usa encadeamento separado (chaining) para resolução de colisões
 
-7. **Hash Table com Sondagem Linear M=150** (`HashTableDS(M=150, probing='linear')`)
-   - Resolução de colisões por sondagem linear
+7. **Hash Table M=150 fnv1a** (`HashTableDS(M=150, hash_fn='fnv1a')`)
+   - Função hash FNV-1a (Fowler–Noll–Vo)
    - Tabela grande para análise de performance
+   - Usa encadeamento separado (chaining) para resolução de colisões
 
-8. **Array Linked List Não-Ordenada** (`ArrayLinkedList()`)
-   - Lista ligada implementada com arrays
-   - Inserção sempre no final, busca sequencial
+8. **Hash Table M=50 djb2** (`HashTableDS(M=50, hash_fn='djb2')`)
+   - Função hash DJB2 de Dan J. Bernstein
+   - Tabela pequena com hash amplamente usado
+   - Usa encadeamento separado (chaining) para resolução de colisões
 
-9. **Array Linked List Ordenada** (`ArrayLinkedList(sorted_insert=True)`)
-   - Lista ligada com inserção ordenada
-   - Busca mais eficiente, inserção mais custosa
+9. **Hash Table M=100 djb2** (`HashTableDS(M=100, hash_fn='djb2')`)
+   - Função hash DJB2 de Dan J. Bernstein
+   - Tamanho médio para comparação
+   - Usa encadeamento separado (chaining) para resolução de colisões
+
+10. **Hash Table M=150 djb2** (`HashTableDS(M=150, hash_fn='djb2')`)
+    - Função hash DJB2 de Dan J. Bernstein
+    - Tabela grande para análise de performance
+    - Usa encadeamento separado (chaining) para resolução de colisões
+
+11. **Array Linked List Não-Ordenada** (`ArrayLinkedList()`)
+    - Lista ligada implementada com arrays
+    - Inserção sempre no final, busca sequencial
+
+12. **Array Linked List Ordenada** (`ArrayLinkedList(sorted_insert=True)`)
+    - Lista ligada com inserção ordenada
+    - Busca mais eficiente, inserção mais custosa
+
+**Importante**: Todas as Hash Tables usam **encadeamento separado (chaining)** para resolução de colisões. Cada posição da tabela hash contém uma lista ligada que pode armazenar múltiplos elementos quando ocorrem colisões.
 
 ### 📏 Parâmetros do Experimento
 
 - **Tamanhos testados**: 1.000, 2.000, 3.000, ..., 10.000 elementos
 - **Rounds por configuração**: 5 execuções independentes
-- **Total de execuções**: 450 (9 estruturas × 10 tamanhos × 5 rounds)
+- **Total de execuções**: 600 (12 estruturas × 10 tamanhos × 5 rounds)
 - **Operações testadas**: Inserção, Busca e Remoção
 
 ### 📊 Métricas Coletadas
@@ -72,9 +104,8 @@ Cada estrutura é instrumentada para coletar as seguintes métricas:
 
 #### 🔧 Métricas Específicas para Hash Tables
 - **`hash_collisions`**: Número de colisões detectadas
-- **`hash_cluster_len`**: Comprimento médio dos clusters
-- **`hash_bucket_len_after`**: Tamanho do bucket após inserção (encadeamento)
-- **`hash_displacement`**: Distância da posição ideal até posição final
+- **`hash_bucket_len_after`**: Tamanho da lista após inserção (encadeamento)
+- **`probes`**: Tentativas de acesso aos buckets
 - **`load_factor`**: Fator de carga (N/M) da tabela hash
 
 ## 🎮 Processo de Execução
@@ -84,12 +115,15 @@ Cada estrutura é instrumentada para coletar as seguintes métricas:
 # Inicialização das estruturas com configurações do experimento
     estruturas = [
         ("AVL Tree", lambda: AVLTreeDS()),
-        ("Hash Table M=50 Quadratic", lambda: HashTableDS(M=50, probing='quadratic')),
-        ("Hash Table M=100 Quadratic", lambda: HashTableDS(M=100, probing='quadratic')),
-        ("Hash Table M=150 Quadratic", lambda: HashTableDS(M=150, probing='quadratic')),
-        ("Hash Table M=50 Linear", lambda: HashTableDS(M=50, probing='linear')),
-        ("Hash Table M=100 Linear", lambda: HashTableDS(M=100, probing='linear')),
-        ("Hash Table M=150 Linear", lambda: HashTableDS(M=150, probing='linear')),
+        ("Hash Table M=50 poly31", lambda: HashTableDS(M=50, hash_fn='poly31')),
+        ("Hash Table M=100 poly31", lambda: HashTableDS(M=100, hash_fn='poly31')),
+        ("Hash Table M=150 poly31", lambda: HashTableDS(M=150, hash_fn='poly31')),
+        ("Hash Table M=50 fnv1a", lambda: HashTableDS(M=50, hash_fn='fnv1a')),
+        ("Hash Table M=100 fnv1a", lambda: HashTableDS(M=100, hash_fn='fnv1a')),
+        ("Hash Table M=150 fnv1a", lambda: HashTableDS(M=150, hash_fn='fnv1a')),
+        ("Hash Table M=50 djb2", lambda: HashTableDS(M=50, hash_fn='djb2')),
+        ("Hash Table M=100 djb2", lambda: HashTableDS(M=100, hash_fn='djb2')),
+        ("Hash Table M=150 djb2", lambda: HashTableDS(M=150, hash_fn='djb2')),
         ("Array LinkedList Unsorted", lambda: ArrayLinkedList()),
         ("Array LinkedList Sorted", lambda: ArrayLinkedList(sorted_insert=True))
     ]
@@ -154,20 +188,20 @@ O experimento produz **gráficos individuais por métrica**, facilitando a compa
 
 ### ⚡ Gráficos Específicos - Hash Tables
 
-Gerados apenas para as **6 variações de Hash Tables** do experimento:
+Gerados apenas para as **9 variações de Hash Tables** do experimento:
 
 **8. Colisões de Hash**
 - Número total de colisões detectadas
-- Compara eficácia entre sondagem linear vs. quadrática
+- Compara eficácia entre diferentes funções hash (poly31, fnv1a, djb2)
 - Mostra impacto do tamanho da tabela (M=50, M=100, M=150)
 
-**9. Comprimento de Clusters**
-- Tamanho médio dos clusters formados
-- Evidencia o problema de clustering primário (linear) vs. secundário (quadrática)
+**9. Tamanho dos Buckets após Inserção**
+- Comprimento das listas ligadas em cada bucket após inserções
+- Evidencia como diferentes funções hash afetam a distribuição nos buckets
 
-**10. Tentativas de Sondagem**
-- Número de probes necessários para encontrar posições livres
-- Métrica direta de eficiência da resolução de colisões
+**10. Tentativas de Acesso aos Buckets**
+- Número de acessos aos buckets necessários para operações
+- Métrica direta de eficiência do encadeamento separado com diferentes funções hash
 
 ## 🔧 Implementação Técnica
 
@@ -226,10 +260,12 @@ class GraficosMetricas:
 ### Hipóteses a Serem Testadas
 
 1. **AVL Tree**: Deve apresentar performance logarítmica consistente para todas as operações
-2. **Hash Tables com Sondagem Quadrática**: Menor clustering que sondagem linear, performance melhor com tabelas maiores
-3. **Hash Tables com Sondagem Linear**: Mais clustering, mas acesso sequencial pode ser cache-friendly
-4. **Efeito do Tamanho da Tabela (M)**: Tabelas maiores devem ter menos colisões e melhor performance
-5. **Array Linked Lists**: Performance linear, com versão ordenada superior em buscas mas inferior em inserções
+2. **Hash Tables - Efeito da Função Hash**: Diferentes funções hash (poly31, fnv1a, djb2) devem mostrar variação na distribuição e colisões
+3. **Hash Tables - Efeito do Tamanho**: Tabelas maiores devem ter menos colisões e melhor performance
+4. **Função Hash poly31**: Performance balanceada para strings, boa distribuição geral
+5. **Função Hash fnv1a**: Excelente distribuição, baixas colisões, otimizada para velocidade
+6. **Função Hash djb2**: Performance rápida, amplamente testada, boa para strings curtas
+7. **Array Linked Lists**: Performance linear, com versão ordenada superior em buscas mas inferior em inserções
 
 ### Métricas de Interesse
 
@@ -297,8 +333,8 @@ Este experimento fornece uma base sólida para:
 2. **Otimização de performance** baseada em métricas reais
 3. **Compreensão dos trade-offs** entre diferentes implementações
 4. **Validação empírica** de complexidades teóricas
-5. **Análise do impacto do tamanho da tabela** hash na performance
-6. **Comparação entre sondagem linear e quadrática** em diferentes contextos
+5. **Análise do impacto das funções hash** na performance e distribuição com encadeamento separado
+6. **Comparação entre diferentes funções hash** com encadeamento separado
 
 ### 📊 Insights Esperados por Métrica
 
@@ -315,12 +351,13 @@ Este experimento fornece uma base sólida para:
 
 **Hash Tables Específicas:**
 - **Colisões**: Tabelas maiores (M=150) com menos colisões que pequenas (M=50)
-- **Clusters**: Sondagem linear mostra clustering primário; quadrática reduz problema
-- **Probes**: Eficiência de sondagem varia significativamente entre linear/quadrática
-- **Sondagem Linear vs Quadrática**: Trade-off entre simplicidade e redução de clustering
+- **Efeito da Função Hash**: fnv1a deve ter menos colisões; poly31 performance equilibrada; djb2 rapidez
+- **Buckets**: Encadeamento separado mostra listas ligadas; diferentes funções hash afetam distribuição
+- **Acessos**: Eficiência de acesso aos buckets varia com diferentes funções hash
+- **Comparação entre Funções Hash**: Trade-offs entre velocidade, distribuição e qualidade do hash com encadeamento separado
 - **Array Linked Lists**: Demonstração clara da diferença entre inserção ordenada vs. não-ordenada
 
 ---
 
-*Experimento desenvolvido como parte do estudo comparativo de estruturas de dados, implementando framework completo de instrumentação e análise visual.*
+*Experimento desenvolvido como parte do estudo comparativo de estruturas de dados, implementando framework completo de instrumentação e análise visual com foco na comparação de funções hash usando encadeamento separado (chaining).*
 

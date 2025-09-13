@@ -979,17 +979,12 @@ class AVLTreeDS(BaseDataStructure):
 class HashTableDS(BaseDataStructure):
     """
     Tabela Hash para o Trabalho 1, herdando de BaseDataStructure.
+    Usa encadeamento separado (chaining) para resolução de colisões.
 
     Parâmetros:
       - M: tamanho da tabela (ex.: 100, 1000, 5000)
-      - mode: "chaining" (encadeamento) ou "open" (endereçamento aberto)
-      - probing: "linear" | "quadratic" | "double" (só quando mode == "open")
       - hash_fn: "poly31" | "fnv1a" | "djb2"
-      - hash2_fn: "poly31" | "fnv1a" | "djb2" (só p/ probing == "double")
-      - c1, c2: constantes da sonda quadrática
     """
-
-    _TOMBSTONE = object()
 
     # ---------------------------
     # Construtor
@@ -997,43 +992,27 @@ class HashTableDS(BaseDataStructure):
     def __init__(
         self,
         M: int = 1000,
-        mode: str = "chaining",
-        probing: str = "linear",
         hash_fn: str = "poly31",
-        hash2_fn: str = "fnv1a",
-        c1: int = 1,
-        c2: int = 3,
         **params: Any,
     ) -> None:
-        _h2 = f"|{hash2_fn}" if probing == "double" else ""
-        nome = f"HashTable({M}|{mode}|{probing}|{hash_fn}{_h2})"
-        super().__init__(nome, M=M, mode=mode, probing=probing,
-                         hash_fn=hash_fn, hash2_fn=hash2_fn, c1=c1, c2=c2, **params)
+        nome = f"HashTable({M}|chaining|{hash_fn})"
+        super().__init__(nome, M=M, hash_fn=hash_fn, **params)
 
         assert M > 0, "M deve ser > 0"
         self.M = int(M)
-        self.mode = mode
-        self.probing = probing
-        self.c1, self.c2 = int(c1), int(c2)
 
-        # Seleção das funções hash
+        # Seleção da função hash
         self._hash1 = self._get_hash(hash_fn)
-        self._hash2 = self._get_hash(hash2_fn)
 
-        # Estruturas internas
-        if self.mode == "chaining":
-            self._table: List[List[Tuple[str, Dict[str, Any]]]] = [[] for _ in range(self.M)]
-            self._max_chain_len = 0
-        elif self.mode == "open":
-            self._table = [None] * self.M  # slots: None | (_TOMBSTONE) | (key, value)
-        else:
-            raise ValueError("mode deve ser 'chaining' ou 'open'")
+        # Estrutura interna: array de listas para encadeamento separado
+        self._table: List[List[Tuple[str, Dict[str, Any]]]] = [[] for _ in range(self.M)]
+        self._max_chain_len = 0
 
         # Métricas agregadas
         self._n_items = 0
         self._collisions_total = 0  # soma de colisões ao longo das inserções
 
-        self._metricas_ignorar =  {'rotations'}
+        self._metricas_ignorar = {'rotations', 'hash_cluster_len', 'hash_displacement'}
 
     # ---------------------------
     # Hashes disponíveis
@@ -1046,7 +1025,7 @@ class HashTableDS(BaseDataStructure):
             return self._hash_fnv1a
         if name == "djb2":
             return self._hash_djb2
-        raise ValueError("hash_fn/hash2_fn deve ser 'poly31' | 'fnv1a' | 'djb2'")
+        raise ValueError("hash_fn deve ser 'poly31' | 'fnv1a' | 'djb2'")
 
     @staticmethod
     def _hash_poly31(s: str) -> int:
@@ -1077,31 +1056,17 @@ class HashTableDS(BaseDataStructure):
     def _idx1(self, key: str) -> int:
         return self._hash1(key) % self.M
 
-    def _idx2(self, key: str) -> int:
-        # Para double hashing, passo ∈ [1, M-1]
-        step = self._hash2(key) % self.M
-        return step if step != 0 else 1
-
     # ---------------------------
     # Implementações exigidas pela Base
     # ---------------------------
     def _insert_impl(self, key: str, value: Dict[str, Any]) -> bool:
-        if self.mode == "chaining":
-            return self._insert_chain(key, value)
-        else:
-            return self._insert_open(key, value)
+        return self._insert_chain(key, value)
 
     def _remove_impl(self, key: str) -> bool:
-        if self.mode == "chaining":
-            return self._remove_chain(key)
-        else:
-            return self._remove_open(key)
+        return self._remove_chain(key)
 
     def _search_impl(self, key: str) -> Optional[Dict[str, Any]]:
-        if self.mode == "chaining":
-            return self._search_chain(key)
-        else:
-            return self._search_open(key)
+        return self._search_chain(key)
 
     # ---------------------------
     # Encadeamento separado
@@ -1157,118 +1122,6 @@ class HashTableDS(BaseDataStructure):
         return None
 
     # ---------------------------
-    # Endereçamento aberto
-    # ---------------------------
-    def _insert_open(self, key: str, value: Dict[str, Any]) -> bool:
-        i1 = self._idx1(key)
-        self.note_extra("initial_index", i1)
-
-        collisions_this_op = 0
-        first_tombstone = None
-        final_index: Optional[int] = None
-
-        for t in range(self.M):
-            idx = self._probe_index(i1, key, t)
-            self.note_probe(1)
-            slot = self._table[idx]
-
-            if slot is None:
-                target = first_tombstone if first_tombstone is not None else idx
-                self._table[target] = (key, value)
-                final_index = target
-                self._n_items += 1
-
-                # métricas de hash por operação
-                self._collisions_total += collisions_this_op
-                if collisions_this_op:
-                    self.note_hash_collision(collisions_this_op)
-                self.set_hash_cluster_len(t + 1)
-                disp = (final_index - i1) % self.M
-                self.set_hash_displacement(disp)
-
-                # extras
-                self.note_extra("final_index", final_index)
-                self.note_extra("used_tombstone", first_tombstone is not None)
-                return True
-
-            if slot is self._TOMBSTONE:
-                if first_tombstone is None:
-                    first_tombstone = idx
-                # tombstone não conta colisão
-                continue
-
-            # slot ocupado por outra chave
-            k, _ = slot
-            self.cmp_keys(k, key)
-            if k == key:
-                # duplicata — registra cluster percorrido até aqui
-                self.set_hash_cluster_len(t + 1)
-                self.note_extra("final_index", idx)
-                self.note_extra("used_tombstone", False)
-                if collisions_this_op:
-                    self.note_hash_collision(collisions_this_op)
-                return False
-
-            collisions_this_op += 1  # colisão real
-
-        return False  # tabela cheia
-
-    def _remove_open(self, key: str) -> bool:
-        i1 = self._idx1(key)
-        for t in range(self.M):
-            idx = self._probe_index(i1, key, t)
-            self.note_probe(1)
-            slot = self._table[idx]
-            if slot is None:
-                # registra o esforço de busca mesmo falhando
-                self.set_hash_cluster_len(t + 1)
-                return False
-            if slot is self._TOMBSTONE:
-                continue
-            k, _ = slot
-            self.cmp_keys(k, key)
-            if k == key:
-                self._table[idx] = self._TOMBSTONE
-                self._n_items -= 1
-                self.note_shift(1)
-                # registra cluster percorrido na remoção
-                self.set_hash_cluster_len(t + 1)
-                self.note_extra("final_index", idx)
-                return True
-        return False
-
-    def _search_open(self, key: str) -> Optional[Dict[str, Any]]:
-        i1 = self._idx1(key)
-        for t in range(self.M):
-            idx = self._probe_index(i1, key, t)
-            self.note_probe(1)
-            slot = self._table[idx]
-            if slot is None:
-                self.set_hash_cluster_len(t + 1)
-                return None
-            if slot is self._TOMBSTONE:
-                continue
-            k, v = slot
-            self.cmp_keys(k, key)
-            if k == key:
-                self.set_hash_cluster_len(t + 1)
-                self.note_extra("final_index", idx)
-                return v
-        return None
-
-    def _probe_index(self, i1: int, key: str, t: int) -> int:
-        """Índice da t-ésima sonda conforme o método configurado."""
-        if self.probing == "linear":
-            return (i1 + t) % self.M
-        elif self.probing == "quadratic":
-            return (i1 + self.c1 * t + self.c2 * t * t) % self.M
-        elif self.probing == "double":
-            step = self._idx2(key)
-            return (i1 + t * step) % self.M
-        else:
-            raise ValueError("probing deve ser 'linear' | 'quadratic' | 'double'")
-
-    # ---------------------------
     # Métricas agregadas
     # ---------------------------
     @property
@@ -1282,8 +1135,8 @@ class HashTableDS(BaseDataStructure):
     def load_factor(self) -> float:
         return self._n_items / float(self.M)
 
-    def max_chain_length(self) -> Optional[int]:
-        return self._max_chain_len if self.mode == "chaining" else None
+    def max_chain_length(self) -> int:
+        return self._max_chain_len
     
     
     

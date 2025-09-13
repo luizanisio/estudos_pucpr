@@ -303,7 +303,7 @@ class GraficosMetricas:
         ops_str = "_".join(op_filter)
         
         # Nome final
-        nome = f"avancado_{ds_str}_{metrics_str}_{agg}_{ops_str}_{escala}"
+        nome = f"{ds_str}_{metrics_str}_{agg}_{ops_str}_{escala}"
         nome = nome.replace(" ", "_").replace("/", "_").replace("\\", "_")
         nome = nome[:120]  # Limita tamanho
         
