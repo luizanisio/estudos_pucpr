@@ -100,5 +100,5 @@ def get_dados(qtd = 1000, path = './dados'):
 
 if __name__ == "__main__":
     # Gera arquivos de dados padrão para o experimento
-    for qtd in (1000, 10000, 50000, 100000, 125000):
+    for qtd in (1000, 5000, 10000, 50000, 100000):
         gerar_dados_jsonl(f'dados_{qtd}.json', qtd)

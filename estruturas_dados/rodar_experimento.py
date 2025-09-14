@@ -8,16 +8,21 @@ from time import time
 
 """
 ESTRUTURAS TESTADAS:
-- AVL Tree
-- Hash Tables com 3 tamanhos (M=50, 100, 150) e 3 funções hash (poly31, fnv1a, djb2)
+- AVL Tree (balanceada e não balanceada)
+- Hash Tables com 3 tamanhos (M=100, 1000, 5000) e 3 funções hash (poly31, fnv1a, djb2)
   usando encadeamento separado (chaining) para resolução de colisões
 - Array Linked Lists (ordenada e não-ordenada)
 """
 
+# Gera dados com diferentes tamanhos
+TAMANHOS = [1000, 5000, 10000, 50000, 100000]
+M_HASH_TABLE = [100,1000,5000]
+N_ROUNDS = 5
+
 def gerar_experimento_completo():
     """
     Gera experimento completo comparando diferentes estruturas de dados
-    com 5 rounds para cada configuração N × estrutura.
+    com {N_ROUNDS} rounds para cada configuração N × estrutura.
     """
     print("🔬 INICIANDO EXPERIMENTO COMPLETO DE ESTRUTURAS DE DADOS")
     print("=" * 60)
@@ -28,55 +33,47 @@ def gerar_experimento_completo():
     
     # Definição das estruturas a serem testadas
     estruturas = [
-        ("AVL Tree", lambda: AVLTreeDS()),
-        ("Hash Table M=50 poly31", lambda: HashTableDS(M=50, hash_fn='poly31')),
-        ("Hash Table M=100 poly31", lambda: HashTableDS(M=100, hash_fn='poly31')),
-        ("Hash Table M=150 poly31", lambda: HashTableDS(M=150, hash_fn='poly31')),
-        ("Hash Table M=50 fnv1a", lambda: HashTableDS(M=50, hash_fn='fnv1a')),
-        ("Hash Table M=100 fnv1a", lambda: HashTableDS(M=100, hash_fn='fnv1a')),
-        ("Hash Table M=150 fnv1a", lambda: HashTableDS(M=150, hash_fn='fnv1a')),
-        ("Hash Table M=50 djb2", lambda: HashTableDS(M=50, hash_fn='djb2')),
-        ("Hash Table M=100 djb2", lambda: HashTableDS(M=100, hash_fn='djb2')),
-        ("Hash Table M=150 djb2", lambda: HashTableDS(M=150, hash_fn='djb2')),
-        ("Array LinkedList Unsorted", lambda: ArrayLinkedList()),
-        ("Array LinkedList Sorted", lambda: ArrayLinkedList(sorted_insert=True))
+        ("AVL Tree balanceada", lambda: AVLTreeDS(balanced=True)),
+        ("AVL Tree não balanceada", lambda: AVLTreeDS(balanced=False)),
+        ("Array LinkedList Não ordenado", lambda: ArrayLinkedList(sorted_insert=False)),
+        ("Array LinkedList Ordenado", lambda: ArrayLinkedList(sorted_insert=True))
     ]
+    for h in M_HASH_TABLE:
+        estruturas.append((f"Hash Table M={h} poly31", lambda h=h: HashTableDS(M=h, hash_fn='poly31')))
+        estruturas.append((f"Hash Table M={h} fnv1a", lambda h=h: HashTableDS(M=h, hash_fn='fnv1a')))
+        estruturas.append((f"Hash Table M={h} djb2", lambda h=h: HashTableDS(M=h, hash_fn='djb2')))
     
-    # Gera dados com diferentes tamanhos
-    tamanhos = list(range(1000, 10001, 1000))  # 1K, 2K, ..., 10K
-    n_rounds = 5
-
-    # debug pequeno
+    # Para debug/testes rápidos: descomente a linha abaixo para testar apenas AVL Trees
     # estruturas = estruturas[:2]
-    # tamanhos = list(range(1000, 3001, 1000))  # 1K, 2K, ..., 10K
    
     
     print(f"📊 Configuração do experimento:")
     print(f"  - {len(estruturas)} estruturas diferentes")
-    print(f"  - 1 AVL Tree")
-    print(f"  - 9 Hash Tables: 3 tamanhos (M=50,100,150) × 3 funções hash (poly31,fnv1a,djb2)")
+    print(f"  - 2 AVL Trees (balanceada e não-balanceada)")
+    print(f"  - {3*len(M_HASH_TABLE)} Hash Tables: {len(M_HASH_TABLE)} tamanhos de M {M_HASH_TABLE} × 3 funções hash (poly31,fnv1a,djb2)")
     print(f"    usando encadeamento separado (chaining) para resolução de colisões")
     print(f"  - 2 Array Linked Lists (ordenada e não-ordenada)")
-    print(f"  - {len(tamanhos)} tamanhos: {tamanhos}")
-    print(f"  - {n_rounds} rounds por configuração")
-    print(f"  - Total: {len(estruturas) * len(tamanhos) * n_rounds} execuções")
+    print(f"  - {len(TAMANHOS)} tamanhos: {TAMANHOS}")
+    print(f"  - {N_ROUNDS} rounds por configuração")
+    print(f"  - Total: {len(estruturas) * len(TAMANHOS) * N_ROUNDS} execuções")
     print()
+
     
     # Coleta dados para todas as combinações
-    total_execucoes = len(estruturas) * len(tamanhos) * n_rounds
+    total_execucoes = len(estruturas) * len(TAMANHOS) * N_ROUNDS
     execucao_atual = 0
     
     for i, (nome_estrutura, factory_estrutura) in enumerate(estruturas):
         print(f"🔧 ESTRUTURA {i+1}/{len(estruturas)}: {nome_estrutura}")
         
-        for n in tamanhos:
+        for n in TAMANHOS:
             print(f"  📏 N = {n:,} elementos")
             
-            for round_num in range(n_rounds):
+            for round_num in range(N_ROUNDS):
                 execucao_atual += 1
                 progresso = (execucao_atual / total_execucoes) * 100
                 
-                print(f"    🔄 Round {round_num+1}/{n_rounds} [{progresso:.1f}%]")
+                print(f"    🔄 Round {round_num+1}/{N_ROUNDS} [{progresso:.1f}%]")
                 
                 # Cria nova instância da estrutura
                 estrutura:BaseDataStructure = factory_estrutura()
@@ -109,7 +106,7 @@ def gerar_graficos_comparativos(lista_estruturas):
     # Definição das métricas principais para todas as estruturas
     metricas_principais = [
         ('comparisons', 'Comparações', ('insert', 'search', 'remove')),
-        ('node_visits', 'Visitas de Nós', ('insert', 'search', 'remove')),
+        ('node_visits', 'Visitas de Nós (Árvores/Listas)', ('insert', 'search', 'remove')),
         ('wall_time_ms', 'Tempo de Execução (ms)', ('insert', 'search', 'remove')),
         ('mem_moves', 'Movimentações de Memória', ('insert', 'search', 'remove')),
         ('proc_time_ms', 'Tempo de CPU (ms)', ('insert', 'search', 'remove'))
@@ -122,8 +119,9 @@ def gerar_graficos_comparativos(lista_estruturas):
             print(f"  {i}. {titulo_metrica}. {escala}...")
             
             # Gera gráfico comparativo para esta métrica
+            estruturas_filtradas = [e for e in lista_estruturas if metrica not in e._metricas_ignorar]
             caminho = gm.plotar_metricas(
-                structures=lista_estruturas,
+                structures=estruturas_filtradas,
                 metrics=[metrica],  # Uma métrica por gráfico
                 agg='sum',
                 escala=escala,
@@ -226,20 +224,14 @@ if __name__ == "__main__":
     # Estatísticas do experimento
     print(f"\n📋 ESTATÍSTICAS DO EXPERIMENTO:")
     print(f"  - Estruturas testadas: {len(estruturas)}")
-    print(f"    • 1 AVL Tree")
-    print(f"    • 9 Hash Tables (3 tamanhos × 3 funções hash) usando encadeamento separado")
+    print(f"    • 2 AVL Trees (balanceada e não-balanceada)")
+    print(f"    • {3*len(M_HASH_TABLE)} Hash Tables ({len(M_HASH_TABLE)} valores de M {M_HASH_TABLE} × 3 funções hash) usando encadeamento separado")
     print(f"    • 2 Array Linked Lists")
-    print(f"  - Tamanhos testados: {len(list(range(1000, 10001, 1000)))}")
-    print(f"  - Rounds por configuração: 5")
+    print(f"  - Tamanhos testados: {len(TAMANHOS)} {TAMANHOS}")
+    print(f"  - Rounds por configuração: {N_ROUNDS}")
     print(f"  - Total de execuções: {len(lista_estruturas)}")
     print(f"  - Gráficos gerados: {len(caminhos)} (um por métrica)")
-    print("  - Métricas principais: 5 gráficos comparando todas as estruturas")
-    print("  - Análises específicas: 2 gráficos de operações individuais")
-    
-    # Contabiliza gráficos de hash tables se existirem
-    hash_count = sum(1 for e in lista_estruturas if 'HashTable' in e.__class__.__name__)
-    if hash_count > 0:
-        print("  - Hash Tables: 3 gráficos específicos (colisões, buckets, acessos)")
+    print(f"  - Métricas principais: {len(caminhos)} gráficos comparando todas as estruturas")   
     print('|' * 80)
     print(f'Tempo de geração do experimento: {time() - inicio:.2f} segundos')
     

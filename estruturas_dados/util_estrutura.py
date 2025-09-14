@@ -604,7 +604,7 @@ class ArrayLinkedList(BaseDataStructure):
             self.next: Optional["ArrayLinkedList._Node"] = None
 
     def __init__(self, default_pos: int = -1, sorted_insert: bool = False, **params: Any) -> None:
-        nome = f'ArrayLinkedList(def={default_pos}, {"sorted" if sorted_insert else "unsorted"})'
+        nome = f'ArrayLinkedList(def={default_pos}|{"sorted" if sorted_insert else "unsorted"})'
         super().__init__(nome, default_pos=default_pos, sorted_insert=sorted_insert, **params)
         self.head: Optional[ArrayLinkedList._Node] = None
         self.tail: Optional[ArrayLinkedList._Node] = None
@@ -796,14 +796,19 @@ class ArrayLinkedList(BaseDataStructure):
 ##########################################################################################    
 class AVLTreeDS(BaseDataStructure):
     """
-    AVL Tree para o Trabalho 1, herdando da BaseDataStructure.
+    AVL Tree/BST para o Trabalho 1, herdando da BaseDataStructure.
     - Chave: matrícula (str, zero-padded)
     - Valor: dicionário com dados do funcionário
+
+    Parâmetros:
+    - balanced: bool (default=True)
+        True -> comporta-se como AVL Tree com rotações para balanceamento
+        False -> comporta-se como BST simples sem rotações
 
     Métricas:
     - comparisons: via cmp_keys
     - node_visits: cada vez que acessamos/avaliamos um nó
-    - rotations: em rotações LL, RR, LR, RL
+    - rotations: em rotações LL, RR, LR, RL (apenas quando balanced=True)
     """
     
     class _Node:
@@ -815,10 +820,15 @@ class AVLTreeDS(BaseDataStructure):
             self.right: Optional["AVLTreeDS._Node"] = None
             self.height: int = 1  # altura do nó (AVL)
 
-    def __init__(self, **params: Any) -> None:
-        super().__init__("AVLTree", **params)
+    def __init__(self, balanced: bool = True, **params: Any) -> None:
+        name = f"AVLTree({'balanced' if balanced else 'unbalanced'})"
+        super().__init__(name, balanced=balanced, **params)
         self.root: Optional[AVLTreeDS._Node] = None
-        self._metricas_ignorar =  {'hash_collisions', 'hash_bucket_len_after', 'hash_cluster_len', 'hash_displacement'}
+        self.balanced = balanced
+        self._metricas_ignorar = {
+            'hash_collisions', 'hash_bucket_len_after', 
+            'hash_cluster_len', 'hash_displacement'
+        }
 
     # ----------------------------
     # Implementações exigidas pela Base
@@ -889,6 +899,11 @@ class AVLTreeDS(BaseDataStructure):
         self.note_visit(1)
 
         self._update_height(node)
+        
+        # Se balanceamento está desabilitado, apenas retorna o nó sem rotações
+        if not self.balanced:
+            return node
+            
         bf = self._balance_factor(node)
 
         # LL
@@ -1030,7 +1045,9 @@ class HashTableDS(BaseDataStructure):
         self._n_items = 0
         self._collisions_total = 0  # soma de colisões ao longo das inserções
 
-        self._metricas_ignorar = {'rotations', 'hash_cluster_len', 'hash_displacement'}
+        self._metricas_ignorar = {
+            'rotations', 'hash_cluster_len', 'hash_displacement', 'node_visits'
+        }
 
     # ---------------------------
     # Hashes disponíveis

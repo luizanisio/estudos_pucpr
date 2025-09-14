@@ -155,11 +155,11 @@ class GraficosMetricas:
                 
                 if escala_usada == "log":
                     ax.set_yscale('log')
-                    ax.set_ylabel(f'{metrica} ({agg}) - ESCALA LOG', fontsize=12)
-                    ax.set_title(f'{metrica} - Escala Logarítmica', fontsize=14, fontweight='bold')
+                    ax.set_ylabel(f'{metrica} ({agg}) - escala log', fontsize=12)
+                    #ax.set_title(f'{metrica} - Escala Logarítmica', fontsize=14, fontweight='bold')
                 else:
                     ax.set_ylabel(f'{metrica} ({agg})', fontsize=12)
-                    ax.set_title(f'{metrica} - Escala Linear', fontsize=14, fontweight='bold')
+                    #ax.set_title(f'{metrica} - Escala Linear', fontsize=14, fontweight='bold')
                 
                 ax.grid(True, alpha=0.3)
                 ax.legend(frameon=True, fancybox=True, shadow=True)
