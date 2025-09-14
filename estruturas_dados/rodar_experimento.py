@@ -44,7 +44,13 @@ def gerar_experimento_completo():
         estruturas.append((f"Hash Table M={h} djb2", lambda h=h: HashTableDS(M=h, hash_fn='djb2')))
     
     # Para debug/testes rápidos: descomente a linha abaixo para testar apenas AVL Trees
-    # estruturas = estruturas[:2]
+    # com parâmetro debug, roda o experimento rápido
+    if '-debug' in sys.argv:
+        print("⚠️ Modo DEBUG ativado: executando experimento rápido com apenas 2 estruturas e 2 tamanhos")
+        global N_ROUNDS, TAMANHOS
+        N_ROUNDS = 2
+        TAMANHOS = [1000, 5000]
+        estruturas = estruturas[:3]  # Apenas as 2 AVL Trees e 1 ArrayLinkedList
    
     
     print(f"📊 Configuração do experimento:")

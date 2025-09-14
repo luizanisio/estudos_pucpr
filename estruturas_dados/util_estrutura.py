@@ -582,7 +582,7 @@ class ArrayLinkedList(BaseDataStructure):
     - Chave: matrícula (str, 6 dígitos)
     - Valor: dicionário do funcionário
 
-    Inserção: O(n) para cada operação devido à verificação de duplicatas
+    Inserção: O(1) inserção direta (fim da lista) ou O(n) inserção ordenada
     Busca: O(n) linear como esperado para lista ligada
     Remoção: O(n) linear para localizar + O(1) para remover
     Memória: Crescimento linear adequado com número de elementos
@@ -618,10 +618,6 @@ class ArrayLinkedList(BaseDataStructure):
     # Implementações Base
     # =========================
     def _insert_impl(self, key: str, value: Dict[str, Any]) -> bool:
-        # 1) rejeitar duplicata
-        if self._find_node(key) is not None:
-            return False
-
         new_node = self._Node(key, value)
 
         # 2) lista vazia → caso base
@@ -764,10 +760,6 @@ class ArrayLinkedList(BaseDataStructure):
             self.note_visit(1)
             prev = cur
             cur = cur.next
-
-        # checar duplicata tardia (guard rail; normal já foi feita)
-        if cur is not None and self.cmp_keys(cur.key, new_node.key) == 0:
-            return False
 
         new_node.next = prev.next
         self.note_shift(1)          # new_node.next = prev.next
@@ -936,15 +928,10 @@ class AVLTreeDS(BaseDataStructure):
 
         self.note_visit(1)
         c = self.cmp_keys(key, node.key)
-        if c == 0:
-            return node, False
-        elif c < 0:
+        if c < 0:
             node.left, inserted = self._insert(node.left, key, value)
         else:
             node.right, inserted = self._insert(node.right, key, value)
-
-        if not inserted:
-            return node, False
 
         node = self._rebalance(node)
         return node, True
@@ -1110,12 +1097,6 @@ class HashTableDS(BaseDataStructure):
         i = self._idx1(key)
         self.note_probe(1)  # acesso ao bucket
         bucket = self._table[i]
-
-        # Checar duplicata
-        for k, _ in bucket:
-            self.cmp_keys(k, key)
-            if k == key:
-                return False  # duplicata
 
         # Colisão nesta operação: bucket já possuía elementos
         if len(bucket) > 0:

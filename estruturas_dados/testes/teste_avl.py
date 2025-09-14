@@ -21,14 +21,14 @@ def test_avl_basic_functionality():
     result3 = avl.insert("000005", {"nome": "Eduardo", "idade": 35})
     result4 = avl.insert("000002", {"nome": "Bruno", "idade": 28})
     result5 = avl.insert("000004", {"nome": "Diana", "idade": 32})
-    result6 = avl.insert("000003", {"nome": "Carlos2", "idade": 31})  # duplicata
+    result6 = avl.insert("000003", {"nome": "Carlos2", "idade": 31})  # duplicata permitida
     
     print(f"Inserção 000003: {result1} (esperado: True)")
     print(f"Inserção 000001: {result2} (esperado: True)")
     print(f"Inserção 000005: {result3} (esperado: True)")
     print(f"Inserção 000002: {result4} (esperado: True)")
     print(f"Inserção 000004: {result5} (esperado: True)")
-    print(f"Inserção duplicata: {result6} (esperado: False)")
+    print(f"Inserção duplicata: {result6} (esperado: True - duplicatas agora permitidas)")
     
     # Teste de busca
     found1 = avl.search("000001")

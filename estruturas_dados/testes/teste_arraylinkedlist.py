@@ -19,11 +19,11 @@ def test_basic_functionality():
     # Teste de inserção
     result1 = ds.insert("000001", {"nome": "João", "idade": 25})
     result2 = ds.insert("000002", {"nome": "Maria", "idade": 30})
-    result3 = ds.insert("000001", {"nome": "Pedro", "idade": 35})  # duplicata
+    result3 = ds.insert("000001", {"nome": "Pedro", "idade": 35})  # duplicata permitida
     
     print(f"Inserção 1: {result1} (esperado: True)")
     print(f"Inserção 2: {result2} (esperado: True)")
-    print(f"Inserção duplicata: {result3} (esperado: False)")
+    print(f"Inserção duplicata: {result3} (esperado: True - duplicatas agora permitidas)")
     
     # Teste de busca
     found1 = ds.search("000001")
@@ -68,15 +68,15 @@ def test_metrics_counting():
     print(f"  - Visitas de nós: {insert_metrics.get('node_visits', 0)}")
     print(f"  - Mem moves: {insert_metrics.get('mem_moves', 0)}")
     
-    # Análise esperada para inserção no final:
+    # Análise esperada para inserção no final (sem verificação de duplicatas):
     # - 1º elemento: 2 shifts (head, tail), 0 comparações
-    # - 2º elemento: 2 shifts (tail.next, tail), 1 comparação (verifica duplicata)
-    # - 3º elemento: 2 shifts (tail.next, tail), 2 comparações (verifica duplicatas)
-    # Total esperado: 6 shifts, 3 comparações, 3 visitas
+    # - 2º elemento: 2 shifts (tail.next, tail), 0 comparações
+    # - 3º elemento: 2 shifts (tail.next, tail), 0 comparações  
+    # Total esperado: 6 shifts, 0 comparações, 0 visitas
     
     print(f"\nAnálise:")
     print(f"  Shifts esperados: 6, obtidos: {insert_metrics.get('shifts', 0)}")
-    print(f"  Comparações esperadas: 3, obtidas: {insert_metrics.get('comparisons', 0)}")
+    print(f"  Comparações esperadas: 0, obtidas: {insert_metrics.get('comparisons', 0)}")
     print()
 
 def test_sorted_insertion():

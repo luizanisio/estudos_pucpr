@@ -20,12 +20,12 @@ def test_hash_basic_functionality():
     result1 = hash_chain.insert("000001", {"nome": "Ana", "idade": 25})
     result2 = hash_chain.insert("000002", {"nome": "Bruno", "idade": 30})
     result3 = hash_chain.insert("000011", {"nome": "Carlos", "idade": 35})  # pode colidir com 000001
-    result4 = hash_chain.insert("000001", {"nome": "Ana2", "idade": 26})  # duplicata
+    result4 = hash_chain.insert("000001", {"nome": "Ana2", "idade": 26})  # duplicata permitida
     
     print(f"Inserção 000001: {result1} (esperado: True)")
     print(f"Inserção 000002: {result2} (esperado: True)")
     print(f"Inserção 000011: {result3} (esperado: True)")
-    print(f"Inserção duplicata: {result4} (esperado: False)")
+    print(f"Inserção duplicata: {result4} (esperado: True - duplicatas agora permitidas)")
     
     # Teste de busca
     found1 = hash_chain.search("000001")
