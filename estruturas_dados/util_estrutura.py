@@ -91,6 +91,9 @@ class OpRecord:
 
     # espaço extra opcional para futuras métricas customizadas
     extras: Dict[str, Any] = field(default_factory=dict)
+    
+    # identificador do round experimental
+    round_id: Optional[str] = None  # identificador único do round de experimento
 
     def to_dict(self) -> Dict[str, Any]:
         d = asdict(self)
@@ -131,6 +134,7 @@ class BaseDataStructure:
         self._proc = psutil.Process() if _HAS_PSUTIL else None
         self._extras_current_op: Dict[str, Any] = {}
         self._metricas_ignorar = set()
+        self._current_round_id: Optional[str] = None  # identificador do round atual
 
     # --------- Interface pública ---------
     def insert(self, key: str, value: Dict[str, Any]) -> bool:
@@ -196,6 +200,14 @@ class BaseDataStructure:
         """Armazena par (k,v) extra para o OpRecord atual (será flatten como x_<k>)."""
         self._extras_current_op[key] = value
 
+    def set_round_id(self, round_id: str) -> None:
+        """Define o identificador do round atual para todas as operações subsequentes."""
+        self._current_round_id = round_id
+
+    def clear_round_id(self) -> None:
+        """Limpa o identificador do round atual."""
+        self._current_round_id = None
+
     # --------- Instrumentação ---------
     def _instrument(self, op: str, key: Any, fn) -> bool:
         self.counters.reset()
@@ -251,6 +263,7 @@ class BaseDataStructure:
             cpu_system_ms=cpu_sys_ms,
             rss_mb=rss_mb,
             tracemalloc_peak_kb=peak_kb,
+            round_id=self._current_round_id,
 
             # comuns
             comparisons=self.counters.comparisons,
@@ -446,34 +459,36 @@ class BaseDataStructure:
         metrics = tuple(metrics) if metrics is not None else default_metrics
 
         def _extract_cycles(ds: "BaseDataStructure"):
-            """Quebra o log em segmentos contíguos por operação e
-            retorna ciclos que começam em 'insert'."""
+            """
+            Agrupa os registros por round_id para identificar inequivocamente cada round.
+            Retorna cycles baseados em round_id único.
+            """
             log = ds.log
-            segments = []
-            i = 0
-            while i < len(log):
-                op = log[i].op
-                j = i + 1
-                while j < len(log) and log[j].op == op:
-                    j += 1
-                segments.append({"op": op, "records": log[i:j]})
-                i = j
+            if not log:
+                return []
+
+            # Agrupa por round_id
+            rounds_dict = defaultdict(list)
+            for rec in log:
+                round_id = rec.round_id or "unknown"
+                rounds_dict[round_id].append(rec)
 
             cycles = []
-            cur = None
-            for seg in segments:
-                if seg["op"] == "insert":
-                    if cur:
-                        cycles.append(cur)
-                    cur = {
-                        "insert_attempts": len(seg["records"]),   # N da rodada
-                        "segments": [seg],
-                    }
-                else:
-                    if cur:
-                        cur["segments"].append(seg)
-            if cur:
-                cycles.append(cur)
+            for round_id, records in rounds_dict.items():
+                if not records:
+                    continue
+                
+                # Conta inserções no round para determinar N
+                insert_count = sum(1 for r in records if r.op == "insert")
+                
+                # Cria o cycle com todas as operações do round
+                cycle = {
+                    "round_id": round_id,
+                    "insert_attempts": insert_count,
+                    "records": records,
+                }
+                cycles.append(cycle)
+            
             return cycles
 
         def _aggregate_over_records(recs, metric: str, ds, N_cycle: int) -> Optional[float]:
@@ -509,11 +524,10 @@ class BaseDataStructure:
             cycles = _extract_cycles(ds)
             for cyc in cycles:
                 N = cyc["insert_attempts"]
-                # filtra registros das operações desejadas dentro da rodada
-                recs = []
-                for seg in cyc["segments"]:
-                    if seg["op"] in op_filter:
-                        recs.extend(seg["records"])
+                round_id = cyc["round_id"]
+                
+                # Filtra registros das operações desejadas dentro da rodada
+                recs = [r for r in cyc["records"] if r.op in op_filter]
                 if not recs:
                     continue
 

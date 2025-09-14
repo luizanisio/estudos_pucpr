@@ -5,7 +5,7 @@ Teste específico para verificar contagem de shifts na remoção AVL.
 # Adiciona o diretório atual ao path
 import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append('../')
+sys.path.extend(['../','./'])
 
 from util_estrutura import AVLTreeDS
 

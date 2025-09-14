@@ -84,6 +84,10 @@ def gerar_experimento_completo():
                 estrutura = factory_estrutura()
                 estrutura.clear_log()  # Limpa logs anteriores
                 
+                # Define identificador único do round
+                round_id = f"{nome_estrutura}_N{n}_R{round_num+1}"
+                estrutura.set_round_id(round_id)
+                
                 # Executa operações
                 estrutura.carregar_dados(n)        # INSERTs
                 estrutura.buscar_dados(n // 4)     # SEARCHs (25% do total)
