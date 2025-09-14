@@ -8,6 +8,7 @@ import tracemalloc
 import json
 import csv
 import random
+import uuid
 from util_dados import get_dados
 random.seed(42)
 
@@ -134,7 +135,7 @@ class BaseDataStructure:
         self._proc = psutil.Process() if _HAS_PSUTIL else None
         self._extras_current_op: Dict[str, Any] = {}
         self._metricas_ignorar = set()
-        self._current_round_id: Optional[str] = None  # identificador do round atual
+        self._current_round_id = str(uuid.uuid4())  # gera ID único automaticamente
 
     # --------- Interface pública ---------
     def insert(self, key: str, value: Dict[str, Any]) -> bool:
@@ -199,14 +200,6 @@ class BaseDataStructure:
     def note_extra(self, key: str, value: Any) -> None:
         """Armazena par (k,v) extra para o OpRecord atual (será flatten como x_<k>)."""
         self._extras_current_op[key] = value
-
-    def set_round_id(self, round_id: str) -> None:
-        """Define o identificador do round atual para todas as operações subsequentes."""
-        self._current_round_id = round_id
-
-    def clear_round_id(self) -> None:
-        """Limpa o identificador do round atual."""
-        self._current_round_id = None
 
     # --------- Instrumentação ---------
     def _instrument(self, op: str, key: Any, fn) -> bool:
@@ -290,6 +283,10 @@ class BaseDataStructure:
     @property
     def log(self) -> List[OpRecord]:
         return self._log
+    
+    @property
+    def round_id(self) -> str:
+        return self._current_round_id
 
     def clear_log(self) -> None:
         self._log.clear()
@@ -544,8 +541,14 @@ class BaseDataStructure:
             if not values:
                 continue
             rounds = len(values)
-            mean_val = float(np.mean(values))
-            std_val = float(np.std(values, ddof=1)) if rounds > 1 else 0.0
+            mean_val = round(float(np.mean(values)), 5)
+            
+            # Cálculo seguro do desvio padrão
+            if rounds > 1:
+                std_val = round(float(np.std(values, ddof=1)), 5)
+            else:
+                std_val = 0.0
+                
             rows.append({
                 "ds_name": ds_name,
                 "instances": int(N),
@@ -553,6 +556,7 @@ class BaseDataStructure:
                 "mean_per_round": mean_val,
                 "rounds": rounds,
                 "std_per_round": std_val,
+                "values": values,  # para debug/inspeção
             })
 
         if not rows:

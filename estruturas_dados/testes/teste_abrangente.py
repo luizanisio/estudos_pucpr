@@ -27,14 +27,14 @@ def teste_abrangente():
             avl = AVLTreeDS()
             avl.clear_log()
             round_id = f"AVL_N{n}_R{round_num+1}"
-            avl.set_round_id(round_id)
+            # Note: round_id agora é gerado automaticamente como UUID
             
             avl.carregar_dados(n)
             avl.buscar_dados(n // 4)
             avl.remover_dados(n // 10)
             
             estruturas.append(avl)
-            print(f"✅ {round_id}: {len(avl.log)} ops")
+            print(f"✅ {round_id} (UUID: {avl.round_id[:8]}...): {len(avl.log)} ops")
     
     # Hash Table com múltiplos N e rounds
     for n in tamanhos:
@@ -42,14 +42,14 @@ def teste_abrangente():
             hash_table = HashTableDS(M=30, hash_fn='poly31')
             hash_table.clear_log()
             round_id = f"Hash_N{n}_R{round_num+1}"
-            hash_table.set_round_id(round_id)
+            # Note: round_id agora é gerado automaticamente como UUID
             
             hash_table.carregar_dados(n)
             hash_table.buscar_dados(n // 4)
             hash_table.remover_dados(n // 10)
             
             estruturas.append(hash_table)
-            print(f"✅ {round_id}: {len(hash_table.log)} ops")
+            print(f"✅ {round_id} (UUID: {hash_table.round_id[:8]}...): {len(hash_table.log)} ops")
     
     print(f"\n📊 Total: {len(estruturas)} estruturas criadas")
     print(f"📊 Configuração: {len(tamanhos)} tamanhos × {n_rounds} rounds × 2 estruturas")

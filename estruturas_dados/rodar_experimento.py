@@ -7,13 +7,6 @@ from util_graficos import GraficosMetricas
 from time import time
 
 """
-MODIFICAÇÕES NA GERAÇÃO DE GRÁFICOS:
-- Cada gráfico agora mostra UMA métrica comparando TODAS as estruturas
-- 5 gráficos principais: comparisons, node_visits, wall_time_ms, mem_moves, proc_time_ms
-- 2 gráficos de operações específicas: inserções e buscas (comparisons)
-- 3 gráficos específicos para Hash Tables: hash_collisions, hash_bucket_len_after, probes
-- Total: 10 gráficos individuais
-
 ESTRUTURAS TESTADAS:
 - AVL Tree
 - Hash Tables com 3 tamanhos (M=50, 100, 150) e 3 funções hash (poly31, fnv1a, djb2)
@@ -52,6 +45,11 @@ def gerar_experimento_completo():
     # Gera dados com diferentes tamanhos
     tamanhos = list(range(1000, 10001, 1000))  # 1K, 2K, ..., 10K
     n_rounds = 5
+
+    # debug pequeno
+    # estruturas = estruturas[:2]
+    # tamanhos = list(range(1000, 3001, 1000))  # 1K, 2K, ..., 10K
+   
     
     print(f"📊 Configuração do experimento:")
     print(f"  - {len(estruturas)} estruturas diferentes")
@@ -81,13 +79,9 @@ def gerar_experimento_completo():
                 print(f"    🔄 Round {round_num+1}/{n_rounds} [{progresso:.1f}%]")
                 
                 # Cria nova instância da estrutura
-                estrutura = factory_estrutura()
+                estrutura:BaseDataStructure = factory_estrutura()
                 estrutura.clear_log()  # Limpa logs anteriores
-                
-                # Define identificador único do round
-                round_id = f"{nome_estrutura}_N{n}_R{round_num+1}"
-                estrutura.set_round_id(round_id)
-                
+                                
                 # Executa operações
                 estrutura.carregar_dados(n)        # INSERTs
                 estrutura.buscar_dados(n // 4)     # SEARCHs (25% do total)

@@ -20,34 +20,31 @@ def teste_rounds_summary():
     estruturas = []
     
     # 2 AVL Trees com 2 rounds cada
-    for round_num in range(2):
+    for N in (1000,10000):
+       for round_num in range(2):
         avl = AVLTreeDS()
         avl.clear_log()
-        round_id = f"AVL_N100_R{round_num+1}"
-        avl.set_round_id(round_id)
         
         # Executa operações para este round
-        avl.carregar_dados(100)
-        avl.buscar_dados(25)
-        avl.remover_dados(10)
+        avl.carregar_dados(N)
+        avl.buscar_dados(250)
+        avl.remover_dados(100)
         
         estruturas.append(avl)
-        print(f"✅ Criado {round_id}: {len(avl.log)} operações registradas")
+        print(f"✅ Criado {avl.round_id}: {len(avl.log)} operações registradas")
     
     # 2 Hash Tables com 2 rounds cada
     for round_num in range(2):
         hash_table = HashTableDS(M=50, hash_fn='poly31')
         hash_table.clear_log()
-        round_id = f"Hash_N100_R{round_num+1}"
-        hash_table.set_round_id(round_id)
         
         # Executa operações para este round
-        hash_table.carregar_dados(100)
-        hash_table.buscar_dados(25)
+        hash_table.carregar_dados(1000)
+        hash_table.buscar_dados(250)
         hash_table.remover_dados(10)
         
         estruturas.append(hash_table)
-        print(f"✅ Criado {round_id}: {len(hash_table.log)} operações registradas")
+        print(f"✅ Criado {hash_table.round_id}: {len(hash_table.log)} operações registradas")
     
     print(f"\n📊 Total: {len(estruturas)} estruturas criadas")
     
@@ -89,42 +86,11 @@ def teste_rounds_summary():
         traceback.print_exc()
         return False
 
-def teste_round_id_unico():
-    """Testa se round_ids únicos estão sendo registrados corretamente."""
-    print("\n🔍 TESTE DE ROUND_ID ÚNICO")
-    print("=" * 30)
-    
-    # Cria uma estrutura e faz operações com diferentes round_ids
-    avl = AVLTreeDS()
-    
-    # Round 1
-    avl.set_round_id("test_round_1")
-    avl.insert("001000", {"nome": "Test 1"})
-    avl.insert("001001", {"nome": "Test 2"})
-    
-    # Round 2
-    avl.set_round_id("test_round_2")
-    avl.insert("001002", {"nome": "Test 3"})
-    avl.search("001000")
-    
-    # Verifica os round_ids nos logs
-    round_ids = [rec.round_id for rec in avl.log]
-    print(f"Round IDs registrados: {round_ids}")
-    
-    expected = ["test_round_1", "test_round_1", "test_round_2", "test_round_2"]
-    if round_ids == expected:
-        print("✅ Round IDs registrados corretamente")
-        return True
-    else:
-        print(f"❌ Esperado: {expected}")
-        print(f"❌ Obtido: {round_ids}")
-        return False
 
 if __name__ == '__main__':
-    success1 = teste_round_id_unico()
     success2 = teste_rounds_summary()
     
-    if success1 and success2:
+    if  success2:
         print("\n🎉 TODOS OS TESTES PASSARAM!")
     else:
         print("\n💥 ALGUNS TESTES FALHARAM!")
