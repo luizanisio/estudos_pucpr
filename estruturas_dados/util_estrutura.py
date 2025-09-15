@@ -389,6 +389,14 @@ class BaseDataStructure:
         for linha in dados:
             self.search(key = linha['Matricula'])
 
+    def descarregar_dados(self):
+        ''' limpa os dados carregados para liberar memória
+            - útil quando os dados forem usados só para preparar as
+              métricas para gerar gráficos e não são mais necessários
+              para operações na estrutura
+        '''
+        self.__dados_lote = None
+
     def print_summary(self, agg: str = "sum"):
         print('>---------------------------------------<')
         if agg.strip().lower() == 'sum':

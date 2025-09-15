@@ -79,7 +79,7 @@ def gerar_experimento_completo():
                 execucao_atual += 1
                 progresso = (execucao_atual / total_execucoes) * 100
                 
-                print(f"    🔄 Round {round_num+1}/{N_ROUNDS} [{progresso:.1f}%]")
+                print(f"    🔄 Round {round_num+1}/{N_ROUNDS} | {nome_estrutura} N = {n} | [{progresso:.1f}%]")
                 
                 # Cria nova instância da estrutura
                 estrutura:BaseDataStructure = factory_estrutura()
@@ -89,6 +89,7 @@ def gerar_experimento_completo():
                 estrutura.carregar_dados(n)        # INSERTs
                 estrutura.buscar_dados(n // 4)     # SEARCHs (25% do total)
                 estrutura.remover_dados(n // 10)   # REMOVEs (10% do total)
+                estrutura.descarregar_dados()      # retira o dataset da memória
                 
                 # Adiciona à lista
                 lista_estruturas.append(estrutura)
