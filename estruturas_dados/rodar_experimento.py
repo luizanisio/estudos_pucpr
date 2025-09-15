@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from util_estrutura import AVLTreeDS, HashTableDS, ArrayLinkedList, BaseDataStructure
 from util_graficos import GraficosMetricas
 from time import time
+import json
 
 """
 ESTRUTURAS TESTADAS:
@@ -18,6 +19,8 @@ ESTRUTURAS TESTADAS:
 TAMANHOS = [1000, 5000, 10000, 50000, 100000]
 M_HASH_TABLE = [100,1000,5000]
 N_ROUNDS = 5
+PASTA_ROUNDS = './rounds'
+os.makedirs(PASTA_ROUNDS, exist_ok=True)
 
 def gerar_experimento_completo():
     """
@@ -29,7 +32,7 @@ def gerar_experimento_completo():
     GraficosMetricas.limpar_pasta_graficos()
     
     # Lista para armazenar todas as estruturas com dados coletados
-    lista_estruturas = []
+    lista_metricas = []
     
     # Definição das estruturas a serem testadas
     estruturas = [
@@ -51,7 +54,13 @@ def gerar_experimento_completo():
         N_ROUNDS = 2
         TAMANHOS = [1000, 5000]
         estruturas = estruturas[:3]  # Apenas as 2 AVL Trees e 1 ArrayLinkedList
-   
+
+    if '-limpar' in sys.argv:
+        print("⚠️ Limpar cache: remove métricas antigas na pasta rounds")
+        for f in os.listdir(PASTA_ROUNDS):
+            if f.endswith('.json'):
+                os.remove(os.path.join(PASTA_ROUNDS, f))
+        print("   ✅ Cache limpo com sucesso!")
     
     print(f"📊 Configuração do experimento:")
     print(f"  - {len(estruturas)} estruturas diferentes")
@@ -74,6 +83,31 @@ def gerar_experimento_completo():
         
         for n in TAMANHOS:
             print(f"  📏 N = {n:,} elementos")
+
+            # verifica se todos os rounds estão em disco e usa os dados carregados
+            gerar_arq_metricas = lambda rn,nm, _n:os.path.join(PASTA_ROUNDS,f'metrics_{nm.replace(" ","_")}_N{_n}_round{rn}.json')
+            metricas_disco = []
+            for round_num in range(N_ROUNDS):
+                arq_metricas = gerar_arq_metricas(round_num, nome_estrutura, n)
+                if os.path.exists(arq_metricas):
+                    print(f"    ✅ Round {round_num+1}/{N_ROUNDS} | {nome_estrutura} N = {n} | [já existente, carregando...]")
+                    # Carrega métricas do arquivo JSON
+                    try:
+                        with open(arq_metricas, 'r') as f:
+                            metricas_json = json.load(f)
+                        metricas_disco.append(metricas_json)
+                    except Exception as e:
+                        print(f"    ❌ Erro ao carregar {arq_metricas}: {e}")
+                        metricas_disco = []
+                        break
+                else:
+                    metricas_disco = []
+                    break
+
+            if len(metricas_disco) == N_ROUNDS:
+                print(f"    🎉 Todos os {N_ROUNDS} rounds já existem em disco. Usando dados carregados.")
+                lista_metricas.extend(metricas_disco)
+                continue  # pula para o próximo tamanho n
             
             for round_num in range(N_ROUNDS):
                 execucao_atual += 1
@@ -92,14 +126,24 @@ def gerar_experimento_completo():
                 estrutura.descarregar_dados()      # retira o dataset da memória
                 
                 # Adiciona à lista
-                lista_estruturas.append(estrutura)
+                metricas = estrutura.export_metrics_json()
+                # Salva métricas em arquivo JSON para possível reuso futuro
+                arq_metricas = gerar_arq_metricas(round_num, nome_estrutura, n)
+                try:
+                    with open(arq_metricas, 'w') as f:
+                        json.dump(metricas, f, indent=2)
+                    print(f"      💾 Métricas salvas em {arq_metricas}")
+                except Exception as e:
+                    print(f"      ❌ Erro ao salvar métricas em {arq_metricas}: {e}")
+                    exit(1)
+                lista_metricas.append(metricas)
     
     print("\n✅ Coleta de dados concluída!")
-    print(f"📊 {len(lista_estruturas)} estruturas prontas para análise")
+    print(f"📊 {len(lista_metricas)} estruturas prontas para análise")
     
-    return lista_estruturas, estruturas
+    return lista_metricas, estruturas
 
-def gerar_graficos_comparativos(lista_estruturas):
+def gerar_graficos_comparativos(lista_metricas):
     """
     Gera gráficos comparativos com um gráfico por métrica.
     Cada gráfico compara todas as estruturas para uma única métrica.
@@ -107,6 +151,8 @@ def gerar_graficos_comparativos(lista_estruturas):
     print("\n📈 GERANDO GRÁFICOS COMPARATIVOS...")
     print("=" * 40)
     
+    # Converte estruturas para o formato de métricas JSON ou utiliza as que foram recuperadas
+   
     gm = GraficosMetricas()
     caminhos_gerados = []
     
@@ -125,10 +171,16 @@ def gerar_graficos_comparativos(lista_estruturas):
         for escala in ['linear', 'log']:
             print(f"  {i}. {titulo_metrica}. {escala}...")
             
+            # Filtra métricas para estruturas que suportam esta métrica
+            metricas_filtradas = []
+            for metrica_json in lista_metricas:
+                # Verifica se a métrica json alguma estrutura correspondente ignora esta métrica
+                if metrica not in metrica_json.get('metrics_out',[]):
+                   metricas_filtradas.append(metrica_json)
+            
             # Gera gráfico comparativo para esta métrica
-            estruturas_filtradas = [e for e in lista_estruturas if metrica not in e._metricas_ignorar]
             caminho = gm.plotar_metricas(
-                structures=estruturas_filtradas,
+                metrics_data=metricas_filtradas,
                 metrics=[metrica],  # Uma métrica por gráfico
                 agg='sum',
                 escala=escala,
@@ -143,7 +195,7 @@ def gerar_graficos_comparativos(lista_estruturas):
     for escala in ['linear', 'log']:
         print(f"  5. Tempo de Execução (ms). {escala}...")
         caminho_time = gm.plotar_metricas(
-            structures=lista_estruturas,
+            metrics_data=lista_metricas,
             metrics=['wall_time_ms'],
             agg='sum',
             escala=escala,
@@ -154,7 +206,7 @@ def gerar_graficos_comparativos(lista_estruturas):
         # Análise específica de inserções
         print(f"  6. Comparações em Inserções. {escala}...")
         caminho_insert = gm.plotar_metricas(
-            structures=lista_estruturas,
+            metrics_data=lista_metricas,
             metrics=['comparisons'],
             agg='sum',
             escala=escala,
@@ -166,7 +218,7 @@ def gerar_graficos_comparativos(lista_estruturas):
         # Análise específica de buscas
         print(f"  7. Comparações em Buscas. {escala}...")
         caminho_search = gm.plotar_metricas(
-            structures=lista_estruturas,
+            metrics_data=lista_metricas,
             metrics=['comparisons'],
             agg='sum',
             escala=escala,
@@ -175,14 +227,15 @@ def gerar_graficos_comparativos(lista_estruturas):
         )
         caminhos_gerados.append(caminho_search)
     
-        # Separar estruturas hash para análise específica
-        hash_structures = [
-            e for e in lista_estruturas
-            if 'HashTable' in e.__class__.__name__
-        ]
+        # Separar métricas de estruturas hash para análise específica
+        hash_metricas = []
+        for metrica_json in lista_metricas:
+            # Verifica se é uma estrutura hash
+            if 'HashTable' in metrica_json.get('ds_name', ''):
+                hash_metricas.append(metrica_json)
         
         # Gráficos específicos para Hash Tables (se existirem)
-        if hash_structures:
+        if hash_metricas:
             print(f"📊 Gerando gráficos específicos para Hash Tables.{escala}...")
             
             # Métricas específicas de hash tables
@@ -197,7 +250,7 @@ def gerar_graficos_comparativos(lista_estruturas):
                 
                 # Gera gráfico específico para hash tables
                 caminho_hash = gm.plotar_metricas(
-                    structures=hash_structures,  # Apenas hash tables
+                    metrics_data=hash_metricas,  # Apenas métricas de hash tables
                     metrics=[metrica_hash],
                     agg='sum',
                     escala=escala,
@@ -214,10 +267,10 @@ if __name__ == "__main__":
     # limpando pasta de gráficos antigos
     GraficosMetricas.limpar_pasta_graficos()
     # Gera experimento
-    lista_estruturas, estruturas = gerar_experimento_completo()
+    lista_metricas, estruturas = gerar_experimento_completo()
     
     # Gera gráficos
-    caminhos = gerar_graficos_comparativos(lista_estruturas)
+    caminhos = gerar_graficos_comparativos(lista_metricas)
 
     print("\n🎉 EXPERIMENTO CONCLUÍDO COM SUCESSO!")
     print("=" * 50)
@@ -226,7 +279,7 @@ if __name__ == "__main__":
         print(f"  {i}. {caminho}")
     
     print(f"\n📁 Verifique a pasta './graficos' para ver todos os arquivos gerados")
-    print(f"📊 Total de estruturas analisadas: {len(lista_estruturas)}")
+    print(f"📊 Total de estruturas analisadas: {len(lista_metricas)}")
     
     # Estatísticas do experimento
     print(f"\n📋 ESTATÍSTICAS DO EXPERIMENTO:")
@@ -236,7 +289,7 @@ if __name__ == "__main__":
     print(f"    • 2 Array Linked Lists")
     print(f"  - Tamanhos testados: {len(TAMANHOS)} {TAMANHOS}")
     print(f"  - Rounds por configuração: {N_ROUNDS}")
-    print(f"  - Total de execuções: {len(lista_estruturas)}")
+    print(f"  - Total de execuções: {len(lista_metricas)}")
     print(f"  - Gráficos gerados: {len(caminhos)} (um por métrica)")
     print(f"  - Métricas principais: {len(caminhos)} gráficos comparando todas as estruturas")   
     print('|' * 80)

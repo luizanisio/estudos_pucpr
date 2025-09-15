@@ -308,6 +308,33 @@ class BaseDataStructure:
             w.writeheader()
             w.writerows(rows)
 
+    def export_metrics_json(self) -> Dict[str, Any]:
+        """
+        Exporta as métricas da estrutura em formato JSON compatível com rounds_summary_df.
+        
+        Retorna um dicionário contendo:
+        - ds_name: nome da estrutura
+        - params: parâmetros da estrutura
+        - round_id: identificador do round atual
+        - metrics: lista com todas as métricas dos OpRecord do log
+        
+        Returns:
+            Dict[str, Any]: Dicionário com dados da estrutura e lista de métricas
+        """
+        metrics = []
+        for rec in self._log:
+            metric_dict = rec.to_dict()
+            metrics.append(metric_dict)
+            metrics_out = list(self._metricas_ignorar)
+        
+        return {
+            "ds_name": self.name,
+            "params": self.params.copy(),
+            "round_id": self._current_round_id,
+            "metrics": metrics,
+            "metrics_out": metrics_out
+        }
+
     def summary(self, agg: str = "sum") -> Dict[str, Dict[str, float]]:
         """
         Retorna um resumo por operação (médias/somas) para gráficos.
@@ -416,10 +443,10 @@ class BaseDataStructure:
     @classmethod
     def rounds_summary_df(
         cls,
-        structures: List["BaseDataStructure"],
+        metrics_data: List[Dict[str, Any]],
         metrics: Optional[Iterable[str]] = None,
-        agg: str = "sum",                          # como agregar DENTRO de cada rodada: "sum" | "mean"
-        op_filter: Tuple[str, ...] = ("insert",),  # operações que entram no cálculo da métrica por rodada
+        agg: str = "sum",
+        op_filter: Tuple[str, ...] = ("insert",),
     ):
         """
         Gera um DataFrame com uma linha por (ds_name, N, metric),
@@ -434,6 +461,8 @@ class BaseDataStructure:
           - std_per_round   : float (desvio-padrão entre rodadas para esse N; 0 se rounds==1)
 
         Parâmetros:
+          - metrics_data : lista de dicionários com dados das estruturas e suas métricas
+                          (formato retornado por export_metrics_json)
           - metrics  : lista de métricas a considerar; se None usa um conjunto padrão
           - agg      : como agregar dentro da rodada ("sum" ou "mean")
           - op_filter: quais operações entram dentro da rodada (default: só 'insert')
@@ -463,20 +492,20 @@ class BaseDataStructure:
         )
         metrics = tuple(metrics) if metrics is not None else default_metrics
 
-        def _extract_cycles(ds: "BaseDataStructure"):
+        def _extract_cycles_from_data(data_item: Dict[str, Any]):
             """
             Agrupa os registros por round_id para identificar inequivocamente cada round.
             Retorna cycles baseados em round_id único.
             """
-            log = ds.log
-            if not log:
+            metrics_records = data_item.get("metrics", [])
+            if not metrics_records:
                 return []
 
             # Agrupa por round_id
             rounds_dict = defaultdict(list)
-            for rec in log:
-                round_id = rec.round_id or "unknown"
-                rounds_dict[round_id].append(rec)
+            for rec_dict in metrics_records:
+                round_id = rec_dict.get("round_id") or "unknown"
+                rounds_dict[round_id].append(rec_dict)
 
             cycles = []
             for round_id, records in rounds_dict.items():
@@ -484,22 +513,24 @@ class BaseDataStructure:
                     continue
                 
                 # Conta inserções no round para determinar N
-                insert_count = sum(1 for r in records if r.op == "insert")
+                insert_count = sum(1 for r in records if r.get("op") == "insert")
                 
                 # Cria o cycle com todas as operações do round
                 cycle = {
                     "round_id": round_id,
                     "insert_attempts": insert_count,
                     "records": records,
+                    "ds_name": data_item.get("ds_name"),
+                    "params": data_item.get("params", {}),
                 }
                 cycles.append(cycle)
             
             return cycles
 
-        def _aggregate_over_records(recs, metric: str, ds, N_cycle: int) -> Optional[float]:
+        def _aggregate_over_records(recs, metric: str, params: Dict[str, Any], N_cycle: int) -> Optional[float]:
             """Agrega a métrica dentro da rodada (entre os OpRecord filtrados)."""
             if metric == "load_factor":
-                M = getattr(ds, "M", None)
+                M = params.get("M")
                 if M:
                     try:
                         return N_cycle / float(M)
@@ -509,7 +540,7 @@ class BaseDataStructure:
 
             vals = []
             for r in recs:
-                v = getattr(r, metric, None)
+                v = r.get(metric)
                 if v is None:
                     continue
                 try:
@@ -518,29 +549,31 @@ class BaseDataStructure:
                     pass
             if not vals:
                 return None
-            return (sum(vals) if agg == "sum" else (sum(vals) / len(vals)))
+            return sum(vals) if agg == "sum" else (sum(vals) / len(vals))
 
         # Acumulador de valores por (ds_name, N, metric) ao longo das rodadas
         by_key = defaultdict(list)  # key => list[valor_da_rodada]
 
-        for ds in structures:
-            if not isinstance(ds, BaseDataStructure):
+        for data_item in metrics_data:
+            if not isinstance(data_item, dict):
                 continue
-            cycles = _extract_cycles(ds)
+            cycles = _extract_cycles_from_data(data_item)
             for cyc in cycles:
                 N = cyc["insert_attempts"]
                 round_id = cyc["round_id"]
+                ds_name = cyc["ds_name"]
+                params = cyc["params"]
                 
                 # Filtra registros das operações desejadas dentro da rodada
-                recs = [r for r in cyc["records"] if r.op in op_filter]
+                recs = [r for r in cyc["records"] if r.get("op") in op_filter]
                 if not recs:
                     continue
 
                 for metric in metrics:
-                    val = _aggregate_over_records(recs, metric, ds, N)
+                    val = _aggregate_over_records(recs, metric, params, N)
                     if val is None:
                         continue
-                    key = (ds.name, int(N), metric)
+                    key = (ds_name, int(N), metric)
                     by_key[key].append(float(val))
 
         # Constrói o DataFrame final

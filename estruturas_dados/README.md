@@ -2,88 +2,62 @@
 
 ## Objetivo do Experimento
 
-Este experimento foi desenvolvido para realizar uma análise comparativa abrangente de diferentes estruturas de dados, medindo sua performance em operações fundamentais (inserção, busca e remoç📊 Configuração do experimento:
-  - 12 estruturas diferentes
-  - 1 AVL Tree
-  - 9 Hash Tables: 3 tamanhos (M=50,100,150) × 3 funções hash (poly31,fnv1a,djb2)
-  - 2 Array Linked Lists (ordenada e não-ordenada)
-  - [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
-  - 5 rounds por configuração
-  - Total: 600 execuções
-
-🔧 ESTRUTURA 1/12: AVL Treeavés de múltiplas métricas quantitativas.
+Este experimento foi desenvolvido para realizar uma análise comparativa abrangente de diferentes estruturas de dados, medindo sua performance em operações fundamentais (inserção, busca e remoção) através de múltiplas métricas quantitativas.
 
 ## Metodologia Experimental
 
 ### Estruturas de Dados Analisadas
 
-O experimento analisa **12 estruturas de dados diferentes**:
+O experimento analisa **estruturas de dados diferentes** baseadas nas configurações do script `rodar_experimento.py`:
 
-1. **AVL Tree** (`AVLTreeDS`)
+1. **AVL Tree Balanceada** (`AVLTreeDS(balanced=True)`)
    - Árvore binária balanceada automaticamente
    - Garante altura logarítmica para todas as operações
 
-2. **Hash Table M=50 poly31** (`HashTableDS(M=50, hash_fn='poly31')`)
-   - Função hash polinomial com base 31
-   - Tabela pequena para análise de colisões
+2. **AVL Tree Não Balanceada** (`AVLTreeDS(balanced=False)`)
+   - Árvore binária sem auto-balanceamento (vira BST)
+   - Permite análise comparativa do impacto do balanceamento
+
+3. **Hash Tables** (variando M e função hash)
+   - Tamanhos de tabela definidos pela variável `M_HASH_TABLE` 
+   - Três funções hash: poly31, fnv1a, djb2
    - Usa encadeamento separado (chaining) para resolução de colisões
+   - Total: `len(M_HASH_TABLE) × 3` configurações
 
-3. **Hash Table M=100 poly31** (`HashTableDS(M=100, hash_fn='poly31')`)
-   - Função hash polinomial com base 31
-   - Tamanho médio para comparação
-   - Usa encadeamento separado (chaining) para resolução de colisões
+4. **Array Linked List Não-Ordenada** (`ArrayLinkedList(sorted_insert=False)`)
+   - Lista ligada implementada com arrays
+   - Inserção sempre no final, busca sequencial
 
-4. **Hash Table M=150 poly31** (`HashTableDS(M=150, hash_fn='poly31')`)
-   - Função hash polinomial com base 31
-   - Tabela grande para reduzir colisões
-   - Usa encadeamento separado (chaining) para resolução de colisões
+5. **Array Linked List Ordenada** (`ArrayLinkedList(sorted_insert=True)`)
+   - Lista ligada com inserção ordenada
+   - Busca mais eficiente, inserção mais custosa
 
-5. **Hash Table M=50 fnv1a** (`HashTableDS(M=50, hash_fn='fnv1a')`)
-   - Função hash FNV-1a (Fowler–Noll–Vo)
-   - Tabela pequena com hash otimizado
-   - Usa encadeamento separado (chaining) para resolução de colisões
+### Configurações Específicas das Hash Tables
 
-6. **Hash Table M=100 fnv1a** (`HashTableDS(M=100, hash_fn='fnv1a')`)
-   - Função hash FNV-1a (Fowler–Noll–Vo)
-   - Tamanho médio para comparação
-   - Usa encadeamento separado (chaining) para resolução de colisões
-
-7. **Hash Table M=150 fnv1a** (`HashTableDS(M=150, hash_fn='fnv1a')`)
-   - Função hash FNV-1a (Fowler–Noll–Vo)
-   - Tabela grande para análise de performance
-   - Usa encadeamento separado (chaining) para resolução de colisões
-
-8. **Hash Table M=50 djb2** (`HashTableDS(M=50, hash_fn='djb2')`)
-   - Função hash DJB2 de Dan J. Bernstein
-   - Tabela pequena com hash amplamente usado
-   - Usa encadeamento separado (chaining) para resolução de colisões
-
-9. **Hash Table M=100 djb2** (`HashTableDS(M=100, hash_fn='djb2')`)
-   - Função hash DJB2 de Dan J. Bernstein
-   - Tamanho médio para comparação
-   - Usa encadeamento separado (chaining) para resolução de colisões
-
-10. **Hash Table M=150 djb2** (`HashTableDS(M=150, hash_fn='djb2')`)
-    - Função hash DJB2 de Dan J. Bernstein
-    - Tabela grande para análise de performance
-    - Usa encadeamento separado (chaining) para resolução de colisões
-
-11. **Array Linked List Não-Ordenada** (`ArrayLinkedList()`)
-    - Lista ligada implementada com arrays
-    - Inserção sempre no final, busca sequencial
-
-12. **Array Linked List Ordenada** (`ArrayLinkedList(sorted_insert=True)`)
-    - Lista ligada com inserção ordenada
-    - Busca mais eficiente, inserção mais custosa
+As Hash Tables são testadas com todas as combinações de:
+- **Tamanhos (M)**: Valores definidos na variável `M_HASH_TABLE`
+- **Funções Hash**: 
+  - `poly31`: Função hash polinomial com base 31
+  - `fnv1a`: Função hash FNV-1a (Fowler–Noll–Vo) 
+  - `djb2`: Função hash DJB2 de Dan J. Bernstein
 
 **Importante**: Todas as Hash Tables usam **encadeamento separado (chaining)** para resolução de colisões. Cada posição da tabela hash contém uma lista ligada que pode armazenar múltiplos elementos quando ocorrem colisões.
 
 ### 📏 Parâmetros do Experimento
 
-- **Tamanhos testados**: 1.000, 2.000, 3.000, ..., 10.000 elementos
-- **Rounds por configuração**: 5 execuções independentes
-- **Total de execuções**: 600 (12 estruturas × 10 tamanhos × 5 rounds)
+Os parâmetros são definidos pelas variáveis no script `rodar_experimento.py`:
+
+- **Tamanhos testados**: Valores da variável `TAMANHOS` 
+- **Valores M das Hash Tables**: Valores da variável `M_HASH_TABLE`
+- **Rounds por configuração**: Valor da variável `N_ROUNDS`
+- **Total de estruturas**: 2 AVL Trees + `len(M_HASH_TABLE) × 3` Hash Tables + 2 Array Lists
+- **Total de execuções**: `len(estruturas) × len(TAMANHOS) × N_ROUNDS`
 - **Operações testadas**: Inserção, Busca e Remoção
+
+### Configuração Atual (valores padrão)
+- **`TAMANHOS`**: [1000, 5000, 10000, 50000, 100000] elementos
+- **`M_HASH_TABLE`**: [100, 1000, 5000] 
+- **`N_ROUNDS`**: 5 execuções independentes
 
 ### 📊 Métricas Coletadas
 
@@ -113,20 +87,20 @@ Cada estrutura é instrumentada para coletar as seguintes métricas:
 ### 1️⃣ Fase de Preparação
 ```python
 # Inicialização das estruturas com configurações do experimento
-    estruturas = [
-        ("AVL Tree", lambda: AVLTreeDS()),
-        ("Hash Table M=50 poly31", lambda: HashTableDS(M=50, hash_fn='poly31')),
-        ("Hash Table M=100 poly31", lambda: HashTableDS(M=100, hash_fn='poly31')),
-        ("Hash Table M=150 poly31", lambda: HashTableDS(M=150, hash_fn='poly31')),
-        ("Hash Table M=50 fnv1a", lambda: HashTableDS(M=50, hash_fn='fnv1a')),
-        ("Hash Table M=100 fnv1a", lambda: HashTableDS(M=100, hash_fn='fnv1a')),
-        ("Hash Table M=150 fnv1a", lambda: HashTableDS(M=150, hash_fn='fnv1a')),
-        ("Hash Table M=50 djb2", lambda: HashTableDS(M=50, hash_fn='djb2')),
-        ("Hash Table M=100 djb2", lambda: HashTableDS(M=100, hash_fn='djb2')),
-        ("Hash Table M=150 djb2", lambda: HashTableDS(M=150, hash_fn='djb2')),
-        ("Array LinkedList Unsorted", lambda: ArrayLinkedList()),
-        ("Array LinkedList Sorted", lambda: ArrayLinkedList(sorted_insert=True))
-    ]
+estruturas = [
+    ("AVL Tree balanceada", lambda: AVLTreeDS(balanced=True)),
+    ("AVL Tree não balanceada", lambda: AVLTreeDS(balanced=False)),
+    ("Array LinkedList Não ordenado", lambda: ArrayLinkedList(sorted_insert=False)),
+    ("Array LinkedList Ordenado", lambda: ArrayLinkedList(sorted_insert=True))
+]
+
+# Adiciona Hash Tables dinamicamente baseadas na variável M_HASH_TABLE
+for h in M_HASH_TABLE:
+    estruturas.append((f"Hash Table M={h} poly31", lambda h=h: HashTableDS(M=h, hash_fn='poly31')))
+    estruturas.append((f"Hash Table M={h} fnv1a", lambda h=h: HashTableDS(M=h, hash_fn='fnv1a')))
+    estruturas.append((f"Hash Table M={h} djb2", lambda h=h: HashTableDS(M=h, hash_fn='djb2')))
+
+# Total de estruturas: 4 + (len(M_HASH_TABLE) × 3)
 ```
 
 ### 2️⃣ Fase de Execução
@@ -188,12 +162,12 @@ O experimento produz **gráficos individuais por métrica**, facilitando a compa
 
 ### ⚡ Gráficos Específicos - Hash Tables
 
-Gerados apenas para as **9 variações de Hash Tables** do experimento:
+Gerados apenas para as **variações de Hash Tables** do experimento (baseadas em `M_HASH_TABLE`):
 
 **8. Colisões de Hash**
 - Número total de colisões detectadas
 - Compara eficácia entre diferentes funções hash (poly31, fnv1a, djb2)
-- Mostra impacto do tamanho da tabela (M=50, M=100, M=150)
+- Mostra impacto do tamanho da tabela (valores de `M_HASH_TABLE`)
 
 **9. Tamanho dos Buckets após Inserção**
 - Comprimento das listas ligadas em cada bucket após inserções
@@ -248,7 +222,7 @@ class OpRecord:
 ### Geração de Gráficos
 ```python
 class GraficosMetricas:
-    def plotar_metricas_estruturas(self, structures, metrics, agg='sum'):
+    def plotar_metricas_estruturas(self, metrics_data, metrics, agg='sum'):
         """Gera gráficos comparativos usando matplotlib/seaborn"""
         # Configuração automática de layout
         # Suporte a múltiplas métricas simultaneamente
@@ -259,7 +233,7 @@ class GraficosMetricas:
 
 ### Hipóteses a Serem Testadas
 
-1. **AVL Tree**: Deve apresentar performance logarítmica consistente para todas as operações
+1. **AVL Tree**: Quando balanceada, deve apresentar performance logarítmica consistente para todas as operações
 2. **Hash Tables - Efeito da Função Hash**: Diferentes funções hash (poly31, fnv1a, djb2) devem mostrar variação na distribuição e colisões
 3. **Hash Tables - Efeito do Tamanho**: Tabelas maiores devem ter menos colisões e melhor performance
 4. **Função Hash poly31**: Performance balanceada para strings, boa distribuição geral
@@ -282,47 +256,11 @@ cd trab01
 python rodar_experimento.py
 ```
 
-### Saída Esperada
-```
-� INICIANDO EXPERIMENTO COMPLETO DE ESTRUTURAS DE DADOS
-============================================================
-Arquivos removidos da pasta de gráficos: 0
-� Configuração do experimento:
-  - 9 estruturas diferentes
-  - [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
-  - 5 rounds por configuração
-  - Total: 450 execuções
-
-🔧 ESTRUTURA 1/9: AVL Tree
-  📏 N = 1,000 elementos
-    🔄 Round 1/5 [0.2%]
-    🔄 Round 2/5 [0.4%]
-    ...
-    
-📈 GERANDO GRÁFICOS COMPARATIVOS...
-📊 Gerando gráficos individuais por métrica...
-  1. Comparações...
-  2. Visitas de Nós...
-  3. Tempo de Execução (ms)...
-  4. Movimentações de Memória...
-  5. Tempo de CPU (ms)...
-📊 Gerando gráficos específicos por operação...
-  6. Comparações em Inserções...
-  7. Comparações em Buscas...
-📊 Gerando gráficos específicos para Hash Tables...
-  8. Colisões de Hash...
-  9. Comprimento de Clusters...
-  10. Tentativas de Sondagem...
-
-🎉 EXPERIMENTO CONCLUÍDO COM SUCESSO!
-📈 Gráficos gerados: 10 (um por métrica)
-📁 Verifique a pasta './graficos' para ver todos os arquivos gerados
-```
-
 ## 📁 Arquivos Gerados
 
 - **Gráficos**: `./graficos/` - Visualizações individuais em PNG de alta resolução (um por métrica)
 - **Dados**: Estruturas mantêm histórico completo de todas as execuções
+- **Rounds**: `./rounds/` - Métricas geradas por round para continuar a execução do experimento de onde parou
 - **Logs**: Output detalhado do processo de execução
 
 ## 🎯 Conclusões Esperadas
@@ -350,14 +288,14 @@ Este experimento fornece uma base sólida para:
 - **Buscas**: AVL Tree e Hash Tables superiores; Array Lists lineares
 
 **Hash Tables Específicas:**
-- **Colisões**: Tabelas maiores (M=150) com menos colisões que pequenas (M=50)
+- **Colisões**: Tabelas maiores (valores maiores em `M_HASH_TABLE`) com menos colisões
 - **Efeito da Função Hash**: fnv1a deve ter menos colisões; poly31 performance equilibrada; djb2 rapidez
 - **Buckets**: Encadeamento separado mostra listas ligadas; diferentes funções hash afetam distribuição
 - **Acessos**: Eficiência de acesso aos buckets varia com diferentes funções hash
-- **Comparação entre Funções Hash**: Trade-offs entre velocidade, distribuição e qualidade do hash com encadeamento separado
+- **Comparação entre Tamanhos M**: Trade-offs entre uso de memória e performance baseados nos valores de `M_HASH_TABLE`
 - **Array Linked Lists**: Demonstração clara da diferença entre inserção ordenada vs. não-ordenada
 
 ---
 
-*Experimento desenvolvido como parte do estudo comparativo de estruturas de dados, implementando framework completo de instrumentação e análise visual com foco na comparação de funções hash usando encadeamento separado (chaining).*
+*Experimento desenvolvido como parte do estudo comparativo de estruturas de dados, implementando framework completo de instrumentação e análise visual com foco na comparação de funções hash usando encadeamento separado (chaining). Os parâmetros são configuráveis através das variáveis `TAMANHOS`, `M_HASH_TABLE` e `N_ROUNDS` no script `rodar_experimento.py`.*
 

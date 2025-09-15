@@ -1,6 +1,6 @@
 import sys
 import os
-from typing import List, Optional, Iterable, Tuple, Literal
+from typing import List, Optional, Iterable, Tuple, Literal, Dict, Any
 
 # Adiciona o diretório atual ao path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -27,7 +27,7 @@ class GraficosMetricas:
     
     def plotar_metricas(
         self,
-        structures: List[BaseDataStructure],
+        metrics_data: List[Dict[str, Any]],
         metrics: Optional[Iterable[str]] = None,
         agg: str = "sum",
         op_filter: Tuple[str, ...] = ("insert",),
@@ -43,7 +43,8 @@ class GraficosMetricas:
         Gera gráficos com controle explícito sobre a escala utilizada.
         
         Args:
-            structures: Lista de estruturas que já coletaram métricas
+            metrics_data: Lista de dicionários com métricas das estruturas
+                         (formato retornado por export_metrics_json)
             metrics: Lista de métricas a plotar
             agg: Como agregar dentro da rodada ("sum" ou "mean")
             op_filter: Operações a considerar
@@ -59,12 +60,12 @@ class GraficosMetricas:
             str: Caminho do arquivo gerado
         """
         try:
-            if not structures:
-                raise ValueError("Lista de estruturas não pode estar vazia")
+            if not metrics_data:
+                raise ValueError("Lista de métricas não pode estar vazia")
             
-            # Obtém DataFrame
+            # Obtém DataFrame usando o método refatorado
             df = BaseDataStructure.rounds_summary_df(
-                structures=structures,
+                metrics_data=metrics_data,
                 metrics=metrics,
                 agg=agg,
                 op_filter=op_filter
@@ -81,7 +82,7 @@ class GraficosMetricas:
             
             # Gera nome do arquivo
             nome_arquivo = self._gerar_nome_arquivo_avancado(
-                structures, list(df['metric'].unique()), agg, op_filter, escala
+                metrics_data, list(df['metric'].unique()), agg, op_filter, escala
             )
             
             if gravar_csv:
@@ -284,10 +285,10 @@ class GraficosMetricas:
         
         return f"{self.pasta_graficos}/{nome_arquivo}_*.png"
     
-    def _gerar_nome_arquivo_avancado(self, structures, metrics, agg, op_filter, escala):
+    def _gerar_nome_arquivo_avancado(self, metrics_data, metrics, agg, op_filter, escala):
         """Gera nome de arquivo incluindo informação da escala."""
-        # Nomes das estruturas
-        ds_names = [s.__class__.__name__ for s in structures]
+        # Nomes das estruturas a partir dos dados de métricas
+        ds_names = [data.get('ds_name', 'Unknown') for data in metrics_data]
         if len(ds_names) <= 3:
             ds_str = "_".join(ds_names)
         else:
@@ -355,10 +356,16 @@ def teste_classe():
     graficos = GraficosMetricas()
     graficos.limpar_pasta_graficos()
     
+    # Converte estruturas para formato de métricas
+    metrics_data = []
+    for structure in structures:
+        metrics_json = structure.export_metrics_json()
+        metrics_data.append(metrics_json)
+    
     # Teste 1: Escala linear forçada
     print("\n📊 Teste 1: Escala Linear Forçada")
     caminho1 = graficos.plotar_metricas(
-        structures=structures,
+        metrics_data=metrics_data,
         metrics=['comparisons', 'node_visits'],
         escala="linear",
         titulo_personalizado="Teste - Escala Linear Forçada"
@@ -367,7 +374,7 @@ def teste_classe():
     # Teste 2: Escala logarítmica forçada  
     print("\n📊 Teste 2: Escala Logarítmica Forçada")
     caminho2 = graficos.plotar_metricas(
-        structures=structures,
+        metrics_data=metrics_data,
         metrics=['comparisons', 'node_visits'],
         escala="log",
         titulo_personalizado="Teste - Escala Logarítmica Forçada"
@@ -376,7 +383,7 @@ def teste_classe():
     # Teste 3: Escala automática
     print("\n📊 Teste 3: Escala Automática")
     caminho3 = graficos.plotar_metricas(
-        structures=structures,
+        metrics_data=metrics_data,
         metrics=['comparisons', 'node_visits'],
         escala="auto",
         limite_auto=50.0,
@@ -386,7 +393,7 @@ def teste_classe():
     # Teste 4: Comparação lado a lado
     print("\n📊 Teste 4: Comparação Lado a Lado")
     caminho4 = graficos.plotar_metricas(
-        structures=structures,
+        metrics_data=metrics_data,
         metrics=['comparisons'],
         mostrar_comparacao=True,
         titulo_personalizado="Teste - Comparação Linear vs Log"
