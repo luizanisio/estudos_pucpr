@@ -26,15 +26,15 @@ class GrafosBase:
         self.metrica = 'custo'
         self.metrica_final = 'custo total'
         self.adjacentes = []  # guarda a matriz de adjacência [('A', 'B', valor), ('A','C', valor)]
-        self.custos = None  # guarda os nós visitados , o nó anterior e o custo
         self.nos = {}  # Dicionário para armazenar objetos No {letra: No}
         self.movimentos = RegistroVisitas(self)  # Sistema de registro de visitas
+        self.heuristicas = {}  # Dicionário para armazenar heurísticas {(origem, destino): custo_estimado}
         
     def __reset(self):
         self.adjacentes = []
-        self.custos = None
         self.nos = {}
         self.movimentos = RegistroVisitas(self)
+        self.heuristicas = {}
         
     def criar_no(self, no:No, adjacentes_dict: dict = None):
         """Cria ou atualiza um nó
@@ -115,32 +115,45 @@ class GrafosBase:
             label = None
             if 'label' in dados_no:
                 label = dados_no['label']
+            else:
+                label = letra  # Usa a letra como label padrão se não houver label
 
             # Cria o nó sem adjacentes
             no = No(letra=letra, label=label)
             self.nos[letra] = no
         
-        # Segunda fase: criar as adjacências
+        # Segunda fase: criar as adjacências e heurísticas
         # Agora não remove adjacências antigas, apenas adiciona as novas
         for letra, dados_no in sorted(grafo.items(), key=lambda x: x[0]):
             letra = str(letra).upper()
             
-            # Adiciona as adjacências
+            # Adiciona as adjacências e heurísticas
             for destino, peso in dados_no.items():
                 if destino == 'label':
                     continue
-                destino = str(destino).upper()
-                assert destino in self.nos, f"Nó destino '{destino}' não existe. Todos os nós devem estar definidos no grafo."
+                
+                destino_str = str(destino).upper()
+                
+                # Verifica se é uma heurística (formato ~LETRA)
+                if destino_str.startswith('~'):
+                    # Remove o ~ e armazena como heurística
+                    destino_heuristica = destino_str[1:]
+                    if destino_heuristica in self.nos:
+                        self.heuristicas[(letra, destino_heuristica)] = peso
+                    continue
+                
+                # Adjacência normal
+                assert destino_str in self.nos, f"Nó destino '{destino_str}' não existe. Todos os nós devem estar definidos no grafo."
                 
                 # Verifica se a aresta já existe para evitar duplicatas
                 aresta_existe = False
                 for origem_existente, destino_existente, _ in self.adjacentes:
-                    if origem_existente == letra and destino_existente == destino:
+                    if origem_existente == letra and destino_existente == destino_str:
                         aresta_existe = True
                         break
                 
                 if not aresta_existe:
-                    self.adjacentes.append((letra, destino, peso))
+                    self.adjacentes.append((letra, destino_str, peso))
 
     def carregar_json(self, arquivo_json):
         """Carrega um grafo de um arquivo JSON"""
@@ -176,13 +189,29 @@ class GrafosBase:
         """Registra a visita de um nó pela letra"""
         self.movimentos.mover_para(letra)
 
+    def vertice(self, origem: str, destino: str):
+        """Verifica se existe ligação entre origem e destino e 
+           retorna origem, destino e custo da ligação ou infinito se não existir
+        """
+        if origem not in self.nos:
+            raise ValueError("Origem não existem no grafo")
+        if destino not in self.nos:
+            raise ValueError("Destino não existem no grafo")
+        
+        # Encontra o caminho usando o algoritmo específico
+        vertice = [v for v in self.adjacentes if v[0] == origem and v[1] == destino]
+        
+        if not any(vertice):
+           return (origem, destino, float('inf'))   
+                
+        # origem, destino, custo
+        return vertice[0][0], vertice[0][1], vertice[0][2]
+
     def percorrer_caminho(self, caminho):
         """
         Percorre um caminho específico registrando todos os movimentos e custos
-        
         Args:
             caminho: Lista de nós a serem percorridos
-            
         Returns:
             dict: Informações sobre o percurso (custo total, movimentos, etc.)
         """
@@ -243,6 +272,16 @@ class GrafosBase:
                 res.append((destino, peso))
         return res
 
+    def _heuristica(self, origem, destino):
+        """Retorna o custo heurístico entre origem e destino
+        Args:
+            origem: Nó de origem
+            destino: Nó de destino
+        Returns:
+            float: Custo heurístico ou 0 se não existir
+        """
+        return self.heuristicas.get((origem, destino), 0)
+
     def print(self, espacos=5):
         """Imprime o grafo em formato de matriz"""
         # Obtém todas as letras dos nós
@@ -266,36 +305,46 @@ class GrafosBase:
             
             print(''.join(linha))
 
+    def encontrar_caminho(self, inicio, fim):
+        """Aciona o algoritmo e realiza o movimento do caminho encontrado e registra as métricas"""
+        raise NotImplementedError("Subclasses devem implementar este método")
+    
+    def obter_caminho_e_custo(self, inicio, fim):
+        """
+        Executa encontrar_caminho e retorna tupla (caminho, custo_total)
+        
+        Args:
+            inicio: Nó de origem
+            fim: Nó de destino
+            
+        Returns:
+            tuple: (lista_caminho, custo_total)
+        """
+        # Executa o algoritmo
+        sucesso = self.encontrar_caminho(inicio, fim)
+        
+        if not sucesso:
+            return ([], 0)
+        
+        # Extrai caminho e custo do registro de movimentos
+        caminho = self.movimentos.get_caminho_completo()
+        custo = self.movimentos.get_custo_total()
+        
+        return (caminho, custo)
+
 class GrafosDijkstra(GrafosBase):
+    ''' vídeo com explicação do algoritmo: https://www.youtube.com/watch?v=CmIQ29cUGiE
+        Implementa o algoritmo de Dijkstra para encontrar o caminho de menor custo entre dois nós.'''
     def __init__(self, nome_grafo:str = 'Grafo Dijkstra', descricao:str = None):
         super().__init__(nome_grafo, descricao)
         self.nome = 'Dijkstra'
 
-    def caminho(self, inicio, fim):
-        """Encontra o menor caminho entre dois nós"""
-        self.mover_para(inicio) # inicia os contadores
-        no_fim, custo, anterior = self.dijkstra(inicio, fim)
+    def encontrar_caminho(self, inicio, fim):
+        """Implementa o algoritmo de Dijkstra e registra os movimentos
+        """
+        self.movimentos.reset()
         
-        # Reconstrói o caminho
-        caminho = []
-        no_atual = fim
-        while no_atual is not None:
-            caminho.append(no_atual)
-            # Usa a informação anterior dos custos
-            if no_atual in self.custos:
-                no_atual = self.custos[no_atual][2]  # índice 2 é o anterior
-            else:
-                break
-        caminho.reverse()
-        # realiza o caminho encontrado
-        for no in caminho[1:]:  # pula o primeiro que é o início
-            self.movimentos.mover_para(no)
-
-        return caminho, custo
-
-    def dijkstra(self, inicio, fim):
-        """Implementa o algoritmo de Dijkstra"""
-        # Passo 1: Inicializar distâncias - início com custo 0, demais com infinito
+        # Inicializa custos
         self.custos = {}
         for letra in self.nos.keys():
             if letra == inicio:
@@ -303,46 +352,58 @@ class GrafosDijkstra(GrafosBase):
             else:
                 self.custos[letra] = (letra, float('inf'), None)
         
-        # Passo 2: Criar fila de prioridade e conjunto de visitados
         fila = [inicio]
         visitados = set()
         
-        # Passo 3: Processar nós até fila vazia
         while fila:
-            # Passo 4: Selecionar nó com menor distância da fila
+            # Ordena por custo e pega o menor
             fila.sort(key=lambda x: self.custos[x][1])
             no_atual = fila.pop(0)
             
-            # Passo 5: Pular se nó já foi visitado
             if no_atual in visitados:
                 continue
                 
-            # Passo 6: Marcar nó atual como visitado
             visitados.add(no_atual)
             custo_atual = self.custos[no_atual][1]
             
-            # Passo 7: Parar se chegou no destino
+            # Se chegou no fim, pode parar
             if no_atual == fim:
                 break
             
-            # Passo 8: Examinar todos os vizinhos não visitados
+            # Verifica adjacentes
             adjacentes = self._adjacentes_de(no_atual)
             
             for no_adj, custo_adj in adjacentes:
                 if no_adj not in visitados:
-                    # Passo 9: Calcular nova distância via nó atual
                     novo_custo = custo_atual + custo_adj
                     
-                    # Passo 10: Atualizar se encontrou caminho melhor (relaxamento)
+                    # Se encontrou caminho melhor, atualiza
                     if novo_custo < self.custos[no_adj][1]:
                         self.custos[no_adj] = (no_adj, novo_custo, no_atual)
                         
-                        # Passo 11: Adicionar vizinho na fila se não estiver
                         if no_adj not in fila:
                             fila.append(no_adj)
         
-        # Passo 12: Retornar resultado final para o nó destino
-        return self.custos[fim]
+        # Reconstrói o caminho usando os custos calculados
+        if self.custos[fim][1] == float('inf'):
+            # Não há caminho
+            return False
+        
+        # Reconstrói o caminho de trás para frente
+        caminho_reconstruido = []
+        no_atual = fim
+        while no_atual is not None:
+            caminho_reconstruido.append(no_atual)
+            no_atual = self.custos[no_atual][2]  # anterior
+        
+        # Inverte para ficar na ordem correta
+        caminho_reconstruido.reverse()
+        
+        # Registra os movimentos no sistema de visitas
+        for no in caminho_reconstruido:
+            self.movimentos.mover_para(no)
+        
+        return True
 
 class RegistroVisitas:
     """
@@ -508,7 +569,127 @@ class RegistroVisitas:
         
         if not caminho_str:
             caminho_str = 'Nenhum'
-        return caminho_str        
+        return caminho_str      
+    
+    def caminho_descrito_heuristica_vs_real(self):
+        ''' Retorna uma descrição, passo a passo, do custo real até o final vs custo heurístico
+            semelhante à descrição do caminho, mas incluindo a heurística
+            A heurística usa o custo real até o próximo vértice + estimativa do próximo ao final
+            O custo real é o custo acumulado até o final
+            Utiliza os dados já calculados do método caminho_heuristica_vs_real
+            Ex. A -> B -> C
+              Retorna A -[r:5+3 | h:5+2]-> B -[r:3 | h:2]-> C
+        '''
+        if not self.historico:
+            return 'Nenhum movimento registrado'
+        
+        # Obtém os dados já calculados
+        dados_heuristica_real = self.caminho_heuristica_vs_real()
+        
+        if not dados_heuristica_real:
+            return 'Nenhum movimento registrado'
+        
+        # Identifica o destino final
+        destino_final = self.historico[-1][1]
+        
+        caminho_str = ''
+        
+        for i, dados in enumerate(dados_heuristica_real):
+            origem, destino, heuristica_ate_final, custo_real_ate_final = dados
+            # Obtém o objeto nó para formatar com label
+            no_destino = self.grafo._get_no(destino)
+            label_destino = no_destino.label if no_destino and no_destino.label else destino
+            if destino != label_destino:
+                destino_formatado = f"{destino}({label_destino})"
+            else:
+                destino_formatado = destino
+            
+            if origem == destino:
+                # Ponto de partida (origem == destino)
+                caminho_str += destino_formatado
+            else:
+                # Movimento normal
+                # Obtém o custo da aresta atual
+                custo_aresta = None
+                for orig_hist, dest_hist, custo_hist, _ in self.historico:
+                    if orig_hist == origem and dest_hist == destino:
+                        custo_aresta = custo_hist
+                        break
+                
+                if custo_aresta is None:
+                    custo_aresta = 0
+                
+                # Calcula os componentes
+                if destino == destino_final:
+                    # Último movimento - mostra custo da aresta e heurística de origem para destino
+                    heuristica_origem_destino = self.grafo._heuristica(origem, destino)
+                    caminho_str += (f" -[r:{custo_aresta} | "
+                                   f"h:{heuristica_origem_destino}]-> {destino_formatado}")
+                else:
+                    # Movimento intermediário - mostra decomposição
+                    heuristica_destino = self.grafo._heuristica(destino, destino_final)
+                    caminho_str += (f" -[r:{custo_aresta}+{custo_real_ate_final} | "
+                                   f"h:{custo_aresta}+{heuristica_destino}]-> {destino_formatado}")
+        
+        return caminho_str
+        
+        return caminho_str
+
+    def caminho_heuristica_vs_real(self):
+        ''' Retorna uma lista de tuplas com os valores de heurística vs real por passo
+            Formato: [('A','F',heurística, real), ...]
+            Os valores são do ponto atual até o ponto final:
+            - heurística = custo real da aresta + heurística do destino ao final
+            - real = custo real total restante até o final
+            - Para o nó final: custo = 0, heurística = 0 (dele para ele mesmo)
+            - Para nó diretamente ligado ao final: real = heurística (ambos iguais ao custo da aresta)
+            
+            Returns:
+                list: Lista de tuplas (origem, destino, heuristica_ate_final, real_ate_final)
+        '''
+        if not self.historico:
+            return []
+        
+        # Identifica o destino final (último nó do caminho)
+        destino_final = self.historico[-1][1]  # último destino do histórico
+        
+        # Calcula custo total do caminho
+        custo_total_caminho = sum(custo for _, _, custo, _ in self.historico if custo > 0)
+        
+        resultado = []
+        custo_acumulado = 0
+        
+        for i, (origem, destino, custo, _) in enumerate(self.historico):
+            if origem is None:
+                # Ponto de partida - custo até final é o custo total
+                custo_real_ate_final = custo_total_caminho
+                
+                # No ponto inicial (nó para ele mesmo), heurística é 0
+                heuristica_ate_final = 0
+                
+                resultado.append((destino, destino, heuristica_ate_final, custo_real_ate_final))
+                continue
+            
+            # Atualiza custo acumulado
+            custo_acumulado += custo
+            
+            # Custo real restante até o final
+            custo_real_ate_final = custo_total_caminho - custo_acumulado
+            
+            # Se chegou no destino final, custo restante = 0
+            if destino == destino_final:
+                # Para o destino final, sempre retorna 0 (heurística dele para ele mesmo)
+                heuristica_ate_final = 0
+                custo_real_ate_final = 0  # Do final para ele mesmo = 0
+            else:
+                # Heurística: custo da aresta atual + estimativa do destino ao final
+                heuristica_destino_ao_final = self.grafo._heuristica(destino, destino_final)
+                # Sempre calcula a heurística, mesmo que seja 0
+                heuristica_ate_final = custo + heuristica_destino_ao_final
+            
+            resultado.append((origem, destino, heuristica_ate_final, custo_real_ate_final))
+        
+        return resultado
     
     def __str__(self):
         """Representação string do registro com informações de performance"""
@@ -528,13 +709,13 @@ class RegistroVisitas:
 
 if __name__ == "__main__":
     print("=== Teste simples da classe ===\n")
+    from util_grafos_exemplos import get_g_youtube
     
     # Cria um grafo Dijkstra
-    grafo = GrafosDijkstra("Teste de Validação")
+    grafo = get_g_youtube()
     
-    # Carrega o grafo simples
+    # Testa o grafo carregado
     try:
-        metadados = grafo.carregar_json('base_grafos/grafo_simples.json')
         print(f"Grafo carregado: {grafo.nome_grafo}")
         print(f"Descrição: {grafo.descricao}")
         print(f"Métrica: {grafo.metrica}")
@@ -561,43 +742,49 @@ if __name__ == "__main__":
         grafo.print()
         print()
         
-        # Exemplo 1: Encontra menor caminho
-        origem, destino = 'A', 'J'
+        # Exemplo 1: Encontra menor caminho usando o novo método
+        origem, destino = 'A', 'C'
         print(f"=== Exemplo 1: Menor caminho de {origem} para {destino} ===")
-        caminho, custo = grafo.caminho(origem, destino)
-        print(f"Caminho encontrado: {' -> '.join(caminho)}")
-        print(f"Custo total: {custo} {grafo.metrica}")
+        grafo.encontrar_caminho(origem, destino)
+        print(f"Caminho encontrado: {grafo.movimentos.caminho_descrito()}")
+        print(f"Custo total: {grafo.movimentos.get_custo_total()} {grafo.metrica}")
         
         # Validação: verifica se o custo está correto
-        if custo == 0:
+        if grafo.movimentos.get_custo_total() == 0:
             print("⚠️  PROBLEMA: Custo 0 detectado! Verificando adjacências...")
             print(f"Adjacentes de {origem}: {grafo._adjacentes_de(origem)}")
             print(f"Total de adjacências no grafo: {len(grafo.adjacentes)}")
         else:
             print("✅ Custo calculado corretamente!")
+        print()
         
-        # Simula o percurso do caminho encontrado
-        resultado = grafo.percorrer_caminho(caminho)
+        # Exemplo 2: Testando o método percorrer_caminho
+        print("=== Exemplo 2: Percorrendo caminho específico ===")
+        caminho_teste = ['A', 'D', 'E', 'G', 'C']
+        print(f"Caminho para testar: {' -> '.join(caminho_teste)}")
+        
+        resultado = grafo.percorrer_caminho(caminho_teste)
         print(f"Resultado da simulação: {resultado['sucesso']}")
         print(f"Custo simulado: {resultado['custo_total']} {grafo.metrica}")
         print()
         
-        # Exemplo 2: Movimento manual no grafo
-        print("=== Exemplo 2: Movimento manual no grafo ===")
+        # Exemplo 3: Movimento manual no grafo
+        print("=== Exemplo 3: Movimento manual no grafo ===")
         grafo.resetar_visitas()
         
         # Faz alguns movimentos manuais
-        movimentos_manuais = ['A', 'B', 'C', 'F', 'I', 'J']
+        movimentos_manuais = ['A', 'D', 'E']
         print(f"Movimentos manuais: {' -> '.join(movimentos_manuais)}")
         
         for no in movimentos_manuais:
             grafo.mover_para(no)
             time.sleep(0.01)  # Pequena pausa para simular tempo
         
+        print(f"Caminho percorrido: {grafo.movimentos.caminho_descrito()}")
         print()
         
-        # Exemplo 3: Print do resumo final
-        print("=== Resumo Final ===")
+        # Exemplo 4: Print do resumo final
+        print("=== Exemplo 4: Resumo Final ===")
         registro = grafo.get_registro_visitas()
         print(registro)
         print()
@@ -621,18 +808,21 @@ if __name__ == "__main__":
             else:
                 print(f"  {i+1}. {origem} -> {destino} (custo: {custo}, tempo: {tempo:.3f}s)")
         
-        # Teste adicional: verifica alguns caminhos específicos
-        print("\n=== Testes Adicionais de Validação ===")
-        testes = [('A', 'B'), ('B', 'C'), ('C', 'F'), ('A', 'E')]
+        # Teste adicional: verifica alguns vértices específicos
+        print("\n=== Exemplo 5: Testes de Vértices ===")
+        testes = [('A', 'D'), ('E', 'G'), ('A', 'Z')]  # Incluindo um caso de erro
         for orig, dest in testes:
             try:
-                cam, cust = grafo.caminho(orig, dest)
-                print(f"{orig} -> {dest}: {' -> '.join(cam)} (custo: {cust})")
+                origem_ret, destino_ret, custo = grafo.vertice(orig, dest)
+                if custo == float('inf'):
+                    print(f"{orig} -> {dest}: Não existe ligação direta")
+                else:
+                    print(f"{orig} -> {dest}: {origem_ret} -> {destino_ret} (custo: {custo})")
             except Exception as e:
                 print(f"{orig} -> {dest}: ERRO - {e}")
         
     except Exception as e:
         print(f"Erro ao executar exemplo: {e}")
-        print("Certifique-se de que o arquivo base_grafos/grafo_simples.json existe")
+        print("Certifique-se de que o arquivo util_grafos_exemplos.py existe e contém get_g_youtube()")
         import traceback
         traceback.print_exc()

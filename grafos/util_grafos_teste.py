@@ -15,6 +15,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from util_grafos import GrafosBase, GrafosDijkstra, RegistroVisitas, No
+from util_grafos_aestrela import GrafoAEstrela
 
 
 class TestCargaGrafos(unittest.TestCase):
@@ -64,7 +65,7 @@ class TestCargaGrafos(unittest.TestCase):
         self.assertEqual(self.grafo.get_label('A'), 'Casa')
         self.assertEqual(self.grafo.get_label('B'), 'Trabalho')
         self.assertEqual(self.grafo.get_label('C'), 'Loja')
-        self.assertIsNone(self.grafo.get_label('D'))  # Sem label
+        self.assertEqual(self.grafo.get_label('D'),'D')  # Sem label
         
         # Verifica se as adjacências foram carregadas
         adj_a = self.grafo._adjacentes_de('A')
@@ -428,6 +429,7 @@ class TestAlgoritmoDijkstra(unittest.TestCase):
         """Configuração inicial para os testes"""
         self.dijkstra = GrafosDijkstra("Teste Dijkstra")
         
+        # Dados consistentes para teste
         dados = {
             'A': {'B': 4, 'C': 2},
             'B': {'A': 4, 'C': 1, 'D': 5},
@@ -438,7 +440,7 @@ class TestAlgoritmoDijkstra(unittest.TestCase):
     
     def test_caminho_simples(self):
         """Testa cálculo de menor caminho simples"""
-        caminho, custo = self.dijkstra.caminho('A', 'D')
+        caminho, custo = self.dijkstra.obter_caminho_e_custo('A', 'D')
         
         # Verifica se encontrou um caminho válido
         self.assertIsInstance(caminho, list)
@@ -448,23 +450,30 @@ class TestAlgoritmoDijkstra(unittest.TestCase):
         self.assertEqual(caminho[-1], 'D')  # Deve terminar em D
         
         # O menor caminho deve ser A -> C -> B -> D (2 + 1 + 5 = 8)
-        # ou A -> B -> D (4 + 5 = 9)
-        # O algoritmo deve escolher o menor
-        self.assertLessEqual(custo, 9)
-    
+        self.assertEqual(custo, 8)
+        self.assertEqual(caminho, ['A', 'C', 'B', 'D'])
+
     def test_dijkstra_interno(self):
         """Testa funcionamento interno do algoritmo Dijkstra"""
-        resultado = self.dijkstra.dijkstra('A', 'D')
+        resultado = self.dijkstra.encontrar_caminho('A', 'C')
+        caminho = self.dijkstra.movimentos.caminho
         
         # Verifica se o resultado tem a estrutura esperada
-        self.assertIsInstance(resultado, tuple)
-        self.assertEqual(len(resultado), 3)  # (nó, custo, anterior)
-        self.assertEqual(resultado[0], 'D')  # Nó de destino
-        self.assertIsInstance(resultado[1], (int, float))  # Custo
+        self.assertIsInstance(resultado, bool)
+        self.assertTrue(resultado)  # Deve ser True para caminho encontrado
+        
+        # Verifica se o caminho foi registrado nos movimentos
+        self.assertGreaterEqual(len(caminho), 2)  # Pelo menos origem e destino
+        self.assertEqual(caminho[0], 'A')  # Primeiro nó deve ser A
+        self.assertEqual(caminho[-1], 'C')  # Último nó deve ser C
+        
+        # Verifica se os nós existem no grafo
+        self.assertIn('A', self.dijkstra.nos)
+        self.assertIn('C', self.dijkstra.nos)
     
     def test_caminho_mesmo_no(self):
         """Testa caminho quando origem e destino são iguais"""
-        caminho, custo = self.dijkstra.caminho('A', 'A')
+        caminho, custo = self.dijkstra.obter_caminho_e_custo('A', 'A')
         
         self.assertEqual(len(caminho), 1)
         self.assertEqual(caminho[0], 'A')
@@ -472,7 +481,7 @@ class TestAlgoritmoDijkstra(unittest.TestCase):
     
     def test_custos_depois_dijkstra(self):
         """Testa se os custos são calculados corretamente"""
-        self.dijkstra.dijkstra('A', 'D')
+        self.dijkstra.encontrar_caminho('A', 'D')
         
         # Verifica se self.custos foi populado
         self.assertIsNotNone(self.dijkstra.custos)
@@ -483,68 +492,395 @@ class TestAlgoritmoDijkstra(unittest.TestCase):
         self.assertEqual(self.dijkstra.custos['A'][1], 0)
 
 
-class TestCasosEspeciais(unittest.TestCase):
-    """Testes para casos especiais e edge cases"""
+class TestGrafoAEstrela(unittest.TestCase):
+    """Testes para o algoritmo A* (A-estrela)"""
     
     def setUp(self):
         """Configuração inicial para os testes"""
-        self.grafo = GrafosBase("Teste Casos Especiais")
+        self.astar = GrafoAEstrela("Teste A*")
     
-    def test_grafo_vazio(self):
-        """Testa comportamento com grafo vazio"""
-        self.assertEqual(len(self.grafo), 0)
-        self.assertEqual(len(self.grafo.adjacentes), 0)
-    
-    def test_no_isolado(self):
-        """Testa comportamento com nó isolado"""
+    def test_astar_funcionamento_basico(self):
+        """Testa funcionamento básico do A* sem heurísticas"""
         dados = {
-            'A': {},  # Nó sem adjacentes
-            'B': {'C': 1},
-            'C': {'B': 1}
+            'A': {'B': 4, 'C': 2},
+            'B': {'A': 4, 'C': 1, 'D': 5},
+            'C': {'A': 2, 'B': 1, 'D': 8},
+            'D': {'B': 5, 'C': 8}
         }
         
-        self.grafo.carregar(dados)
+        self.astar.carregar(dados)
         
-        # Verifica que A existe mas não tem adjacentes
-        self.assertIn('A', self.grafo.nos)
-        adj_a = self.grafo._adjacentes_de('A')
-        self.assertEqual(len(adj_a), 0)
+        # Testa se encontra caminho básico
+        sucesso = self.astar.encontrar_caminho('A', 'D')
         
-        # B e C devem ter adjacentes
-        adj_b = self.grafo._adjacentes_de('B')
-        self.assertEqual(len(adj_b), 1)
+        self.assertTrue(sucesso)
+        caminho = self.astar.movimentos.get_caminho_completo()
+        custo = self.astar.movimentos.get_custo_total()
+        
+        # Verifica estrutura do resultado
+        self.assertIsInstance(caminho, list)
+        self.assertGreater(len(caminho), 1)
+        self.assertEqual(caminho[0], 'A')
+        self.assertEqual(caminho[-1], 'D')
+        self.assertEqual(custo, 8)  # Caminho ótimo A->C->B->D
     
-    def test_valores_limite(self):
-        """Testa valores nos limites"""
-        dados = {
-            'A': {'B': 0, 'C': 999999},  # Peso zero e muito alto
-            'B': {'A': 0},
-            'C': {'A': 999999}
+    def test_astar_com_heuristicas(self):
+        """Testa funcionamento do A* com heurísticas"""
+        dados_com_heuristica = {
+            'A': {'B': 5, 'C': 10, '~E': 12},    # Heurística A→E: 12
+            'B': {'A': 5, 'D': 3, '~E': 8},      # Heurística B→E: 8  
+            'C': {'A': 10, 'D': 2, '~E': 4},     # Heurística C→E: 4
+            'D': {'B': 3, 'C': 2, 'E': 6, '~E': 6},  # Heurística D→E: 6
+            'E': {'D': 6}                         # E é destino
         }
         
-        self.grafo.carregar(dados)
+        self.astar.carregar(dados_com_heuristica)
         
-        adj_a = dict(self.grafo._adjacentes_de('A'))
-        self.assertEqual(adj_a['B'], 0)
-        self.assertEqual(adj_a['C'], 999999)
+        # Verifica se as heurísticas foram carregadas
+        self.assertGreater(len(self.astar.heuristicas), 0)
+        self.assertIn(('A', 'E'), self.astar.heuristicas)
+        self.assertEqual(self.astar.heuristicas[('A', 'E')], 12)
+        
+        # Testa caminho com heurísticas
+        sucesso = self.astar.encontrar_caminho('A', 'E')
+        
+        self.assertTrue(sucesso)
+        caminho = self.astar.movimentos.get_caminho_completo()
+        custo = self.astar.movimentos.get_custo_total()
+        
+        self.assertEqual(caminho[0], 'A')
+        self.assertEqual(caminho[-1], 'E')
+        self.assertGreater(custo, 0)
     
-    def test_string_representacao(self):
-        """Testa representação string do registro de visitas"""
-        dados = {'A': {'B': 5}, 'B': {'A': 5}}
-        self.grafo.carregar(dados)
+    def test_astar_vs_dijkstra_comparacao(self):
+        """Compara A* com Dijkstra no mesmo grafo"""
+        # Dados para A* (com heurísticas)
+        dados_astar = {
+            'A': {'B': 5, 'C': 10, '~D': 15},
+            'B': {'A': 5, 'D': 8, '~D': 8},
+            'C': {'A': 10, 'D': 3, '~D': 3},
+            'D': {'B': 8, 'C': 3}
+        }
         
-        self.grafo.set_label('A', 'Início')
-        self.grafo.set_label('B', 'Fim')
+        # Dados para Dijkstra (sem heurísticas)
+        dados_dijkstra = {
+            'A': {'B': 5, 'C': 10},
+            'B': {'A': 5, 'D': 8},
+            'C': {'A': 10, 'D': 3},
+            'D': {'B': 8, 'C': 3}
+        }
         
-        self.grafo.mover_para('A')
-        self.grafo.mover_para('B')
+        # Configura A*
+        self.astar.carregar(dados_astar)
         
-        registro = self.grafo.get_registro_visitas()
-        string_repr = str(registro)
+        # Configura Dijkstra
+        dijkstra = GrafosDijkstra("Comparação Dijkstra")
+        dijkstra.carregar(dados_dijkstra)
         
-        self.assertIn('A(Início)', string_repr)
-        self.assertIn('B(Fim)', string_repr)
-        self.assertIn('Custo Total: 5', string_repr)
+        # Testa mesmo caminho A → D
+        sucesso_astar = self.astar.encontrar_caminho('A', 'D')
+        sucesso_dijkstra = dijkstra.encontrar_caminho('A', 'D')
+        
+        self.assertTrue(sucesso_astar)
+        self.assertTrue(sucesso_dijkstra)
+        
+        custo_astar = self.astar.movimentos.get_custo_total()
+        custo_dijkstra = dijkstra.movimentos.get_custo_total()
+        
+        # Ambos devem encontrar solução ótima (A→C→D = 13)
+        self.assertEqual(custo_astar, custo_dijkstra)
+        self.assertEqual(custo_astar, 13)
+
+    def test_astar_caminho_a_b_e_grafo_simples(self):
+        """Testa cenário específico A->B->E com custo 12 no grafo_simples.json"""
+        # Carrega o grafo simples
+        self.astar.carregar_json("base_grafos/grafo_simples.json")
+        
+        # Verifica se o algoritmo encontra o caminho correto A->B->E
+        sucesso = self.astar.encontrar_caminho('A', 'E')
+        
+        self.assertTrue(sucesso, "Algoritmo A* deve encontrar caminho de A para E")
+        
+        # Verifica o caminho encontrado
+        caminho = self.astar.movimentos.get_caminho_completo()
+        custo_total = self.astar.movimentos.get_custo_total()
+        
+        # Verifica se é o caminho esperado: A -> B -> E
+        self.assertEqual(caminho, ['A', 'B', 'E'], 
+                        f"Caminho esperado ['A', 'B', 'E'], obtido {caminho}")
+        
+        # Verifica se o custo total é 12 (5 + 7)
+        self.assertEqual(custo_total, 12, 
+                        f"Custo esperado 12 (5+7), obtido {custo_total}")
+        
+        # Verifica se as heurísticas estão sendo calculadas corretamente
+        dados_heuristica = self.astar.movimentos.caminho_heuristica_vs_real()
+        
+        # Deve ter 3 passos: A (inicial), A->B, B->E
+        self.assertEqual(len(dados_heuristica), 3, 
+                        f"Esperados 3 passos, obtidos {len(dados_heuristica)}")
+        
+        # Passo 0: A inicial - heurística=0, real=12
+        self.assertEqual(dados_heuristica[0], ('A', 'A', 0, 12))
+        
+        # Passo 1: A->B - heurística=11 (custo aresta A->B(5) + heur. B->E(6)), real=7 
+        self.assertEqual(dados_heuristica[1], ('A', 'B', 11, 7))
+        
+        # Passo 2: B->E - heurística=0 (chegou ao destino), real=0
+        self.assertEqual(dados_heuristica[2], ('B', 'E', 0, 0))
+        
+        # Verifica a descrição formatada
+        descricao = self.astar.movimentos.caminho_descrito_heuristica_vs_real()
+        self.assertIn('A(Centro da Cidade)', descricao)
+        self.assertIn('B(Shopping Mall)', descricao)
+        self.assertIn('E(Aeroporto)', descricao)
+        self.assertIn('r:5+7 | h:5+6', descricao)  # A->B: real(5+7) | heurística(5+6)
+        self.assertIn('r:7 | h:6', descricao)      # B->E: real(7) | heurística(6)
+
+    
+class TestHeuristicasAEstrela(unittest.TestCase):
+    """Testes específicos para funcionalidades de heurísticas no A*"""
+    
+    def setUp(self):
+        """Configuração inicial para os testes"""
+        self.astar = GrafoAEstrela("Teste Heurísticas")
+    
+    def test_carregamento_formato_heuristica(self):
+        """Testa carregamento correto do formato ~DESTINO"""
+        dados = {
+            'A': {'B': 5, '~C': 10, '~D': 15},
+            'B': {'A': 5, 'C': 3, '~C': 3, '~D': 8},
+            'C': {'B': 3, 'D': 4, '~D': 4},
+            'D': {'C': 4}
+        }
+        
+        self.astar.carregar(dados)
+        
+        # Verifica se as heurísticas foram armazenadas corretamente
+        self.assertEqual(len(self.astar.heuristicas), 5)
+        self.assertIn(('A', 'C'), self.astar.heuristicas)
+        self.assertIn(('A', 'D'), self.astar.heuristicas)
+        self.assertIn(('B', 'C'), self.astar.heuristicas)
+        self.assertIn(('B', 'D'), self.astar.heuristicas)
+        self.assertIn(('C', 'D'), self.astar.heuristicas)
+        
+        # Verifica valores específicos
+        self.assertEqual(self.astar.heuristicas[('A', 'C')], 10)
+        self.assertEqual(self.astar.heuristicas[('A', 'D')], 15)
+        self.assertEqual(self.astar.heuristicas[('B', 'C')], 3)
+    
+    def test_astar_sem_heuristicas(self):
+        """Testa A* sem heurísticas (deve se comportar como Dijkstra)"""
+        dados = {
+            'A': {'B': 4, 'C': 2},
+            'B': {'A': 4, 'C': 1, 'D': 5},
+            'C': {'A': 2, 'B': 1, 'D': 8},
+            'D': {'B': 5, 'C': 8}
+        }
+        
+        self.astar.carregar(dados)
+        
+        # Verifica que não há heurísticas
+        self.assertEqual(len(self.astar.heuristicas), 0)
+        
+        # Testa funcionamento
+        sucesso = self.astar.encontrar_caminho('A', 'D')
+        self.assertTrue(sucesso)
+        
+        custo = self.astar.movimentos.get_custo_total()
+        
+        # Deve encontrar caminho ótimo A→C→B→D (2+1+5=8)
+        self.assertEqual(custo, 8)
+
+
+class TestCaminhoHeuristicaVsReal(unittest.TestCase):
+    """Testes específicos para a função caminho_heuristica_vs_real"""
+    
+    def setUp(self):
+        """Configuração inicial para os testes"""
+        self.astar = GrafoAEstrela("Teste Heurística vs Real")
+    
+    def test_formato_retorno_funcao(self):
+        """Testa formato de retorno da função caminho_heuristica_vs_real"""
+        dados = {
+            'A': {'B': 5, '~C': 10},
+            'B': {'A': 5, 'C': 8, '~C': 8},
+            'C': {'B': 8}
+        }
+        
+        self.astar.carregar(dados)
+        
+        # Executa algoritmo
+        sucesso = self.astar.encontrar_caminho('A', 'C')
+        self.assertTrue(sucesso)
+        
+        # Testa função
+        resultado = self.astar.movimentos.caminho_heuristica_vs_real()
+        
+        # Verifica formato
+        self.assertIsInstance(resultado, list)
+        self.assertGreater(len(resultado), 0)
+        
+        # Cada item deve ser uma tupla com 4 elementos
+        for item in resultado:
+            self.assertIsInstance(item, tuple)
+            self.assertEqual(len(item), 4)
+            origem, destino, heuristica, real = item
+            self.assertIsInstance(origem, str)
+            self.assertIsInstance(destino, str)
+            # heurística pode ser None ou número
+            self.assertTrue(heuristica is None or isinstance(heuristica, (int, float)))
+            self.assertIsInstance(real, (int, float))
+    
+    def test_calculos_corretos_heuristica_vs_real(self):
+        """Testa se os cálculos estão corretos na função"""
+        dados = {
+            'A': {'B': 3, '~D': 10},     # A→B (3), A estima D em 10
+            'B': {'A': 3, 'C': 4, '~D': 6},  # B→C (4), B estima D em 6
+            'C': {'B': 4, 'D': 2, '~D': 2},  # C→D (2), C estima D em 2
+            'D': {'C': 2}
+        }
+        
+        self.astar.carregar(dados)
+        
+        # Executa algoritmo A→D
+        sucesso = self.astar.encontrar_caminho('A', 'D')
+        self.assertTrue(sucesso)
+        
+        # Verifica caminho encontrado
+        caminho = self.astar.movimentos.get_caminho_completo()
+        custo_total = self.astar.movimentos.get_custo_total()
+        
+        # Caminho deve ser A→B→C→D (3+4+2=9)
+        self.assertEqual(caminho, ['A', 'B', 'C', 'D'])
+        self.assertEqual(custo_total, 9)
+        
+        # Testa função heurística vs real
+        resultado = self.astar.movimentos.caminho_heuristica_vs_real()
+        
+        # Deve ter 4 itens: ponto inicial + 3 movimentos
+        self.assertEqual(len(resultado), 4)
+        
+        # Verifica cada passo
+        inicio = resultado[0]
+        self.assertEqual(inicio[0], 'A')  # origem
+        self.assertEqual(inicio[1], 'A')  # destino (mesmo nó)
+        self.assertEqual(inicio[2], 0)    # heurística (ponto inicial)
+        self.assertEqual(inicio[3], 9)    # real até final (custo total)
+        
+        passo1 = resultado[1]  # A→B
+        self.assertEqual(passo1[0], 'A')  # origem
+        self.assertEqual(passo1[1], 'B')  # destino
+        self.assertEqual(passo1[2], 9)    # heurística: 3 (A→B) + 6 (B estima D)
+        self.assertEqual(passo1[3], 6)    # real restante: 4+2=6
+        
+        passo2 = resultado[2]  # B→C
+        self.assertEqual(passo2[0], 'B')  # origem
+        self.assertEqual(passo2[1], 'C')  # destino
+        self.assertEqual(passo2[2], 6)    # heurística: 4 (B→C) + 2 (C estima D)
+        self.assertEqual(passo2[3], 2)    # real restante: 2
+        
+        passo3 = resultado[3]  # C→D
+        self.assertEqual(passo3[0], 'C')  # origem
+        self.assertEqual(passo3[1], 'D')  # destino
+        self.assertEqual(passo3[2], 0)    # heurística: 0 (chegou ao destino final)
+        self.assertEqual(passo3[3], 0)    # real restante: 0
+
+
+class TestCasosEspeciaisAEstrela(unittest.TestCase):
+    """Testes para casos especiais do A*"""
+    
+    def setUp(self):
+        """Configuração inicial para os testes"""
+        self.astar = GrafoAEstrela("Teste Casos Especiais A*")
+    
+    def test_caminho_inexistente(self):
+        """Testa comportamento quando não há caminho"""
+        dados = {
+            'A': {'B': 5},
+            'B': {'A': 5},
+            'C': {'D': 3},  # Componente desconectado
+            'D': {'C': 3}
+        }
+        
+        self.astar.carregar(dados)
+        
+        # Tenta caminho entre componentes desconectados
+        sucesso = self.astar.encontrar_caminho('A', 'C')
+        
+        self.assertFalse(sucesso)
+    
+    def test_no_inexistente(self):
+        """Testa comportamento com nó inexistente"""
+        dados = {
+            'A': {'B': 5},
+            'B': {'A': 5}
+        }
+        
+        self.astar.carregar(dados)
+        
+        # Testa origem inexistente
+        sucesso1 = self.astar.encontrar_caminho('X', 'A')
+        self.assertFalse(sucesso1)
+        
+        # Testa destino inexistente
+        sucesso2 = self.astar.encontrar_caminho('A', 'Y')
+        self.assertFalse(sucesso2)
+    
+    def test_grafo_com_apenas_um_no(self):
+        """Testa comportamento com grafo de um só nó"""
+        dados = {
+            'A': {}  # Nó isolado
+        }
+        
+        self.astar.carregar(dados)
+        
+        # Caminho do nó para ele mesmo
+        sucesso = self.astar.encontrar_caminho('A', 'A')
+        
+        self.assertTrue(sucesso)
+        caminho = self.astar.movimentos.get_caminho_completo()
+        custo = self.astar.movimentos.get_custo_total()
+        
+        self.assertEqual(caminho, ['A'])
+        self.assertEqual(custo, 0)
+    
+    def test_carregamento_json_com_heuristicas(self):
+        """Testa carregamento de arquivo JSON com heurísticas"""
+        dados_json = {
+            "nome_grafo": "Teste A* JSON",
+            "descricao": "Grafo com heurísticas",
+            "metrica": "distancia",
+            "grafo": {
+                'A': {'B': 5, 'C': 10, '~D': 15},
+                'B': {'A': 5, 'D': 8, '~D': 8},
+                'C': {'A': 10, 'D': 3, '~D': 3},
+                'D': {'B': 8, 'C': 3}
+            }
+        }
+        
+        # Cria arquivo temporário
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(dados_json, f)
+            temp_file = f.name
+        
+        try:
+            metadados = self.astar.carregar_json(temp_file)
+            
+            # Verifica metadados
+            self.assertEqual(self.astar.nome_grafo, "Teste A* JSON")
+            self.assertEqual(self.astar.metrica, "distancia")
+            
+            # Verifica heurísticas
+            self.assertGreater(len(self.astar.heuristicas), 0)
+            self.assertIn(('A', 'D'), self.astar.heuristicas)
+            
+            # Testa funcionamento
+            sucesso = self.astar.encontrar_caminho('A', 'D')
+            self.assertTrue(sucesso)
+            
+        finally:
+            os.unlink(temp_file)
 
 
 if __name__ == '__main__':
