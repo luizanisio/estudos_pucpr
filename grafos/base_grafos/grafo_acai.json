@@ -1,0 +1,143 @@
+{
+  "descricao": "Rede de distribuição de açaí - Sistema logístico urbano",
+  "metrica_final": "tempo de entrega em minutos",
+  "metrica": "minutos",
+  "nome_grafo": "Rede de Distribuição de Açaí",
+  "grafo": {
+    "A": {
+      "label": "Centro de Distribuição",
+      "B": 5,
+      "H": 8,
+      "L": 6
+    },
+    "B": {
+      "label": "Shopping Center",
+      "A": 5,
+      "C": 3,
+      "D": 4,
+      "I": 7
+    },
+    "C": {
+      "label": "Hospital Municipal",
+      "B": 3,
+      "E": 6,
+      "F": 9
+    },
+    "D": {
+      "label": "Parque Central",
+      "B": 4,
+      "E": 5,
+      "G": 12
+    },
+    "E": {
+      "label": "Universidade",
+      "C": 6,
+      "D": 5,
+      "J": 8,
+      "K": 10
+    },
+    "F": {
+      "label": "Estádio",
+      "C": 9,
+      "G": 4,
+      "K": 7
+    },
+    "G": {
+      "label": "Aeroporto",
+      "D": 12,
+      "F": 4,
+      "M": 9
+    },
+    "H": {
+      "label": "Zona Industrial",
+      "A": 8,
+      "I": 3,
+      "L": 4
+    },
+    "I": {
+      "label": "Centro Comercial",
+      "B": 7,
+      "H": 3,
+      "J": 6,
+      "L": 6,
+      "M": 8
+    },
+    "J": {
+      "label": "Residencial Alphaville",
+      "E": 8,
+      "I": 6,
+      "K": 4,
+      "M": 7
+    },
+    "K": {
+      "label": "Condomínio Sol Nascente",
+      "E": 10,
+      "F": 7,
+      "J": 4,
+      "M": 5
+    },
+    "L": {
+      "label": "Terminal Rodoviário",
+      "A": 6,
+      "H": 4,
+      "I": 6
+    },
+    "M": {
+      "label": "Prefeitura",
+      "G": 9,
+      "I": 8,
+      "J": 7,
+      "K": 5
+    }
+  },
+  "contexto": {
+    "cenario": "Rede de distribuição de açaí em uma cidade média",
+    "objetivo": "Otimizar rotas de entrega de açaí do centro de distribuição para pontos de venda",
+    "restricoes": [
+      "Tempo de entrega máximo: 30 minutos",
+      "Capacidade limitada de veículos",
+      "Horários de pico com trânsito intenso"
+    ]
+  },
+  "casos_teste": [
+    {
+      "origem": "A",
+      "destino": "M",
+      "descricao": "Centro de Distribuição para Prefeitura",
+      "prioridade": "alta"
+    },
+    {
+      "origem": "A",
+      "destino": "G",
+      "descricao": "Centro de Distribuição para Aeroporto",
+      "prioridade": "média"
+    },
+    {
+      "origem": "B",
+      "destino": "J",
+      "descricao": "Shopping Center para Residencial Alphaville",
+      "prioridade": "alta"
+    },
+    {
+      "origem": "C",
+      "destino": "K",
+      "descricao": "Hospital Municipal para Condomínio Sol Nascente",
+      "prioridade": "média"
+    },
+    {
+      "origem": "H",
+      "destino": "E",
+      "descricao": "Zona Industrial para Universidade",
+      "prioridade": "baixa"
+    }
+  ],
+  "metricas_esperadas": {
+    "tempo_medio_entrega": "15-20 minutos",
+    "nos_mais_visitados": ["A", "B", "I", "M"],
+    "rotas_criticas": [
+      ["A", "B", "I", "M"],
+      ["A", "H", "I", "J"],
+      ["B", "D", "G", "M"]
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "descricao": "Grafo simples para testes - Rede de transporte urbano básica",
+  "metrica_final": "distância em quilômetros",
+  "metrica": "Km",
+  "nome_grafo": "Rede de Transporte Urbano",
+  "grafo": {
+    "A": {
+      "label": "Centro da Cidade",
+      "B": 5,
+      "C": 8,
+      "D": 12
+    },
+    "B": {
+      "label": "Shopping Mall",
+      "A": 5,
+      "C": 3,
+      "E": 7
+    },
+    "C": {
+      "label": "Hospital Geral",
+      "A": 8,
+      "B": 3,
+      "D": 6,
+      "F": 9
+    },
+    "D": {
+      "label": "Universidade",
+      "A": 12,
+      "C": 6,
+      "G": 10
+    },
+    "E": {
+      "label": "Aeroporto",
+      "B": 7,
+      "F": 4,
+      "H": 15
+    },
+    "F": {
+      "label": "Estação de Trem",
+      "C": 9,
+      "E": 4,
+      "G": 5,
+      "I": 8
+    },
+    "G": {
+      "label": "Parque Municipal",
+      "D": 10,
+      "F": 5,
+      "J": 6
+    },
+    "H": {
+      "label": "Porto",
+      "E": 15,
+      "I": 7
+    },
+    "I": {
+      "label": "Zona Industrial",
+      "F": 8,
+      "H": 7,
+      "J": 4
+    },
+    "J": {
+      "label": "Terminal Rodoviário",
+      "G": 6,
+      "I": 4
+    }
+  },
+  "contexto": {
+    "cenario": "Rede de transporte urbano básica para testes de algoritmos",
+    "objetivo": "Testar algoritmos de menor caminho em estrutura urbana típica"
+  },
+  "casos_teste": [
+    {"origem": "A", "destino": "J", "descricao": "Centro para Terminal"},
+    {"origem": "E", "destino": "D", "descricao": "Aeroporto para Universidade"},
+    {"origem": "H", "destino": "B", "descricao": "Porto para Shopping"},
+    {"origem": "C", "destino": "I", "descricao": "Hospital para Zona Industrial"},
+    {"origem": "F", "destino": "A", "descricao": "Estação para Centro"}
+  ],
+  "metricas_esperadas": {
+    "distancia_media": "8-12 km",
+    "nos_centrais": ["C", "F", "G"],
+    "caminhos_longos": [
+      ["H", "E", "B", "A"],
+      ["A", "D", "G", "J"]
+    ]
+  }
+}
