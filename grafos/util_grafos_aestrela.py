@@ -62,6 +62,8 @@ class GrafoAEstrela(GrafosBase):
             # PASSO 6.3: Marca o nó como completamente analisado
             # Adiciona ao conjunto fechado
             conjunto_fechado.add(no_atual)
+            # Registra o nó como visitado no sistema de movimentos
+            self.movimentos.marcar_visitado(no_atual)
             
             # PASSO 6.4: Verifica se chegou no destino
             # Se chegou no destino, reconstrói o caminho

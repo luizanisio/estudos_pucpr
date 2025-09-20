@@ -364,6 +364,8 @@ class GrafosDijkstra(GrafosBase):
                 continue
                 
             visitados.add(no_atual)
+            # NOVO: Registra o nó como visitado no sistema de movimentos
+            self.movimentos.marcar_visitado(no_atual)
             custo_atual = self.custos[no_atual][1]
             
             # Se chegou no fim, pode parar
@@ -495,6 +497,15 @@ class RegistroVisitas:
                               sys.getsizeof(self.historico) +
                               sys.getsizeof(self.custos_parciais) +
                               sys.getsizeof(self.tempos_movimentos))
+    
+    def marcar_visitado(self, letra):
+        """Marca um nó como visitado sem necessariamente mover para ele.
+        Usado para registrar nós explorados durante algoritmos de busca.
+        """
+        letra = letra.upper()
+        if letra not in self.visitados:
+            self.visitados.add(letra)
+            self.nos_expandidos += 1
     
     def foi_visitado(self, no):
         """Verifica se um nó foi visitado"""
@@ -778,7 +789,6 @@ if __name__ == "__main__":
         
         for no in movimentos_manuais:
             grafo.mover_para(no)
-            time.sleep(0.01)  # Pequena pausa para simular tempo
         
         print(f"Caminho percorrido: {grafo.movimentos.caminho_descrito()}")
         print()

@@ -786,6 +786,29 @@ class TestCaminhoHeuristicaVsReal(unittest.TestCase):
         self.assertEqual(passo3[2], 0)    # heurística: 0 (chegou ao destino final)
         self.assertEqual(passo3[3], 0)    # real restante: 0
 
+    def test_calculos_corretos_heuristica_simples_2(self):
+        """Testa se os cálculos estão corretos na função"""
+        
+        self.astar.carregar_json("./base_grafos/grafo_simples_2.json")
+
+        # Executa algoritmo A→E
+        sucesso = self.astar.encontrar_caminho('A', 'E')
+        self.assertTrue(sucesso)
+        
+        # Verifica caminho encontrado
+        caminho = self.astar.movimentos.get_caminho_completo()
+        custo_total = self.astar.movimentos.get_custo_total()
+        
+        # Caminho deve ser A→B→C→D (3+4+2=9)
+        self.assertEqual(caminho, ['A', 'B', 'C', 'D', 'E'])
+        self.assertEqual(custo_total, 8)
+        
+        # Testa função heurística vs real
+        resultado = self.astar.movimentos.caminho_heuristica_vs_real()
+        
+        # Deve ter 4 itens: ponto inicial + 4 movimentos
+        self.assertEqual(len(resultado), 5)
+        
 
 class TestCasosEspeciaisAEstrela(unittest.TestCase):
     """Testes para casos especiais do A*"""
