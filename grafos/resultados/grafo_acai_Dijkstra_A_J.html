@@ -1,0 +1,125 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1>(Dijkstra) A:Distribuidora -> J:Res.Grupo5</h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 600px;
+                 background-color: #f8f9fa;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#007bff", "font": {"color": "black"}, "id": "A", "label": "A: Distribuidora", "shape": "dot", "size": 25, "title": "A: Distribuidora"}, {"color": "#28a745", "font": {"color": "black"}, "id": "B", "label": "B: Shopping Center", "shape": "dot", "size": 20, "title": "B: Shopping Center"}, {"color": "#28a745", "font": {"color": "black"}, "id": "C", "label": "C: Hospital", "shape": "dot", "size": 20, "title": "C: Hospital"}, {"color": "#ffc107", "font": {"color": "black"}, "id": "D", "label": "D: Parque", "shape": "dot", "size": 15, "title": "D: Parque"}, {"color": "#28a745", "font": {"color": "black"}, "id": "E", "label": "E: Universidade", "shape": "dot", "size": 20, "title": "E: Universidade"}, {"color": "#ffc107", "font": {"color": "black"}, "id": "F", "label": "F: Est\u00e1dio", "shape": "dot", "size": 15, "title": "F: Est\u00e1dio"}, {"color": "#ffc107", "font": {"color": "black"}, "id": "G", "label": "G: Aeroporto", "shape": "dot", "size": 15, "title": "G: Aeroporto"}, {"color": "#ffc107", "font": {"color": "black"}, "id": "H", "label": "H: Ind\u00fastria", "shape": "dot", "size": 15, "title": "H: Ind\u00fastria"}, {"color": "#ffc107", "font": {"color": "black"}, "id": "I", "label": "I: Com\u00e9rcio", "shape": "dot", "size": 15, "title": "I: Com\u00e9rcio"}, {"color": "#dc3545", "font": {"color": "black"}, "id": "J", "label": "J: Res.Grupo5", "shape": "dot", "size": 25, "title": "J: Res.Grupo5"}, {"color": "#ffc107", "font": {"color": "black"}, "id": "K", "label": "K: Res.Dijkstra", "shape": "dot", "size": 15, "title": "K: Res.Dijkstra"}, {"color": "#ffc107", "font": {"color": "black"}, "id": "L", "label": "L: Rodovi\u00e1ria", "shape": "dot", "size": 15, "title": "L: Rodovi\u00e1ria"}, {"color": "#ffc107", "font": {"color": "black"}, "id": "M", "label": "M: Prefeitura", "shape": "dot", "size": 15, "title": "M: Prefeitura"}]);
+                  edges = new vis.DataSet([{"arrows": {"to": {"enabled": true, "scaleFactor": 1.2}}, "color": "#28a745", "dashes": false, "from": "A", "label": "15", "title": "A \u2194 B: 15", "to": "B", "width": 4}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "A", "label": "20", "title": "A \u2194 H: 20", "to": "H", "width": 1}, {"arrows": {"to": {"enabled": true}}, "color": "#6c757d", "dashes": true, "from": "A", "label": "11", "title": "A \u2194 L: 11", "to": "L", "width": 1}, {"arrows": {"to": {"enabled": true, "scaleFactor": 1.2}}, "color": "#28a745", "dashes": false, "from": "B", "label": "14", "title": "B \u2194 C: 14", "to": "C", "width": 4}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "B", "label": "25", "title": "B \u2194 D: 25", "to": "D", "width": 1}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "B", "label": "25", "title": "B \u2194 I: 25", "to": "I", "width": 1}, {"arrows": {"to": {"enabled": true, "scaleFactor": 1.2}}, "color": "#28a745", "dashes": false, "from": "C", "label": "21", "title": "C \u2194 E: 21", "to": "E", "width": 4}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "C", "label": "18", "title": "C \u2194 F: 18", "to": "F", "width": 1}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "D", "label": "16", "title": "D \u2194 G: 16", "to": "G", "width": 1}, {"arrows": {"to": {"enabled": true, "scaleFactor": 1.2}}, "color": "#28a745", "dashes": false, "from": "E", "label": "23", "title": "E \u2194 J: 23", "to": "J", "width": 4}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "E", "label": "19", "title": "E \u2194 K: 19", "to": "K", "width": 1}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "F", "label": "18", "title": "F \u2194 G: 18", "to": "G", "width": 1}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "F", "label": "23", "title": "F \u2194 K: 23", "to": "K", "width": 1}, {"arrows": {"from": {"enabled": true}}, "color": "#6c757d", "dashes": true, "from": "G", "label": "17", "title": "G \u2194 M: 17", "to": "M", "width": 1}, {"arrows": {"to": {"enabled": true}}, "color": "#6c757d", "dashes": true, "from": "H", "label": "7", "title": "H \u2194 I: 7", "to": "I", "width": 1}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "H", "label": "15", "title": "H \u2194 L: 15", "to": "L", "width": 1}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "I", "label": "25", "title": "I \u2194 M: 25", "to": "M", "width": 1}, {"arrows": {"from": {"enabled": true}}, "color": "#6c757d", "dashes": true, "from": "J", "label": "11", "title": "J \u2194 K: 11", "to": "K", "width": 1}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "J", "label": "31", "title": "J \u2194 M: 31", "to": "M", "width": 1}, {"arrows": {"to": {"enabled": false}}, "color": "#6c757d", "dashes": true, "from": "K", "label": "20", "title": "K \u2194 M: 20", "to": "M", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"layout": {"improvedLayout": true}, "physics": {"enabled": true, "stabilization": {"iterations": 2000}}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    <div style="text-align: left;">Visitas: ['A', 'L', 'B', 'H', 'I', 'C', 'D', 'F', 'E', 'M', 'G', 'K', 'J'] </div></body>
+</html>

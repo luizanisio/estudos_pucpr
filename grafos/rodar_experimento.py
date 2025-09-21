@@ -203,7 +203,7 @@ def main():
     criar_pasta_resultados(True)
     
     # Configurações do experimento
-    rotas = [('A', 'J'), ('A', 'M'), ('A', 'E'), ('H', 'G'), ('H', 'E')]
+    rotas = [('A', 'J'), ('H', 'J'), ('A', 'K'), ('H', 'G'), ('L', 'K')]
     for origem, destino in rotas:
         print(f"\n--- Rota: {origem} -> {destino} ---")
         # Executa o experimento
