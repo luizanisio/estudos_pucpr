@@ -18,8 +18,6 @@ from util_grafos_outros import GrafoBFS, GrafoDFS, GrafoGananciosa
 from util_graficos import gerar_graficos
 from util_visualizacao import VisualizacaoGrafo
 
-# Configurações do experimento
-ORIGEM, DESTINO = 'A', 'J'
 ARQUIVO_GRAFO = 'base_grafos/grafo_acai.json'
 NUM_EXECUCOES = 5  # Número de execuções para calcular média e desvio padrão
 
@@ -58,7 +56,9 @@ def executar_algoritmo(classe_grafo, nome_algoritmo, arquivo_grafo, origem, dest
         arq_vis = nome_arquivo_visualizacao(arquivo_grafo, nome_algoritmo, origem, destino)
         if not os.path.isfile(arq_vis):
             # evita que várias rodadas gerem a mesma visualização
-            viz = VisualizacaoGrafo(grafo, f"{nome_algoritmo}")
+            origem_lbl = origem if grafo.get_label(origem) is None else f'{origem}:{grafo.get_label(origem)}'       
+            destino_lbl = destino if grafo.get_label(destino) is None else f'{destino}:{grafo.get_label(destino)}'
+            viz = VisualizacaoGrafo(grafo, f"({nome_algoritmo}) {origem_lbl} -> {destino_lbl}")
             viz.gerar_grafo_visual(arq_vis, origem, destino)
         
         return {
@@ -162,11 +162,14 @@ def executar_experimento_completo(arquivo_grafo, origem, destino, num_execucoes=
     
     return pd.DataFrame(resultados)
 
-def criar_pasta_resultados():
+def criar_pasta_resultados(limpar = True):
     """Cria a pasta 'resultados' se não existir."""
     if not os.path.exists('resultados'):
         os.makedirs('resultados')
         print("Pasta 'resultados' criada.")
+
+    if limpar:
+        limpar_pasta_resultados()
 
 def salvar_csv(df, arquivo_grafo, origem, destino):
     """Salva o DataFrame em arquivo CSV na pasta resultados.
@@ -197,23 +200,49 @@ def main():
     print("=== EXPERIMENTO DE COMPARAÇÃO DE ALGORITMOS ===\n")
     
     # Cria pasta de resultados
-    criar_pasta_resultados()
+    criar_pasta_resultados(True)
     
-    # Executa o experimento
-    df_resultados = executar_experimento_completo(ARQUIVO_GRAFO, ORIGEM, DESTINO, NUM_EXECUCOES)
+    # Configurações do experimento
+    rotas = [('A', 'J'), ('A', 'M'), ('A', 'E'), ('H', 'G'), ('H', 'E')]
+    for origem, destino in rotas:
+        print(f"\n--- Rota: {origem} -> {destino} ---")
+        # Executa o experimento
+        df_resultados = executar_experimento_completo(ARQUIVO_GRAFO, origem, destino, NUM_EXECUCOES)
+        
+        # Salva os resultados em CSV
+        arquivo_csv = salvar_csv(df_resultados, ARQUIVO_GRAFO, origem, destino)
+        
+        # Gera gráficos comparativos
+        gerar_graficos(df_resultados, ARQUIVO_GRAFO, origem, destino, mostrar=False)
     
-    # Salva os resultados em CSV
-    arquivo_csv = salvar_csv(df_resultados, ARQUIVO_GRAFO, ORIGEM, DESTINO)
-    
-    # Gera gráficos comparativos
-    gerar_graficos(df_resultados, ARQUIVO_GRAFO, ORIGEM, DESTINO, mostrar=False)
-    
-    # Imprime resumo final
-    print("\n=== RESUMO DOS RESULTADOS ===")
-    print(df_resultados[['algoritmo', 'encontrou_caminho', 'custo_total', 'num_nos_visitados', 'tempo_execucao_medio']].to_string(index=False))
-    
-    print(f"\n=== EXPERIMENTO CONCLUÍDO ===")
-    print(f"Arquivo CSV: {arquivo_csv}")
+        # Executa o experimento
+        df_resultados = executar_experimento_completo(ARQUIVO_GRAFO, origem, destino, NUM_EXECUCOES)
+        
+        # Salva os resultados em CSV
+        arquivo_csv = salvar_csv(df_resultados, ARQUIVO_GRAFO, origem, destino)
+        
+        # Gera gráficos comparativos
+        gerar_graficos(df_resultados, ARQUIVO_GRAFO, origem, destino, mostrar=False)
+        
+        # Imprime resumo final
+        print("\n=== RESUMO DOS RESULTADOS ===")
+        print(df_resultados[['algoritmo', 'encontrou_caminho', 'custo_total', 'num_nos_visitados', 'tempo_execucao_medio']].to_string(index=False))
+        
+        print(f"\n=== EXPERIMENTO CONCLUÍDO ===")
+        print(f"Arquivo CSV: {arquivo_csv}")
+
+def limpar_pasta_resultados():
+    """Limpa a pasta 'resultados' removendo arquivos antigos."""
+    qtd = 0
+    if os.path.exists('./resultados'):
+        for arquivo in os.listdir('./resultados'):
+            caminho_arquivo = os.path.join('resultados', arquivo)
+            ext = os.path.splitext(arquivo)[1].lower()
+            if ext in ['.csv', '.png', '.html'] and os.path.isfile(caminho_arquivo):
+                os.remove(caminho_arquivo)
+                qtd += 1
+    if qtd > 0:
+        print(f"Foram removidos {qtd} arquivos da pasta 'resultados' _o/")
 
 if __name__ == "__main__":
     inicio = time.time()
@@ -222,3 +251,4 @@ if __name__ == "__main__":
     print(f'Tempo de geração do experimento: {time.time() - inicio:.2f} segundos')
     
     print("\nObrigado por utilizar o framework de experimentos de grafos do grupo 5!")    
+    print()

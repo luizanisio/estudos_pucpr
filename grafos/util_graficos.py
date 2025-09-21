@@ -50,7 +50,8 @@ class GeradorGraficos:
         
         # Ajusta layout e salva
         plt.tight_layout()
-        nome_arquivo_grafico = f"{pasta_saida}/{nome_grafo}_{origem}_{destino}_graficos.png"
+        nome_arquivo_grafico = f"{os.path.splitext(os.path.basename(arquivo_grafo))[0]}_{origem}_{destino}_barras.png"
+        nome_arquivo_grafico = os.path.join(pasta_saida, nome_arquivo_grafico)
         plt.savefig(nome_arquivo_grafico, dpi=300, bbox_inches='tight')
         print(f"Gráficos salvos em: {nome_arquivo_grafico}")
         if mostrar:
