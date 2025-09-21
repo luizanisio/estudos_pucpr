@@ -5,7 +5,7 @@
     "nome_grafo": "Rede de Distribuição",
     "grafo": {
         "A": {
-            "label": "Centro de Distribuição",
+            "label": "Distribuidora",
             "B": 15,
             "H": 20,
             "L": 11,
@@ -42,7 +42,7 @@
             "~M": 37.26
         },
         "C": {
-            "label": "Hospital Municipal",
+            "label": "Hospital",
             "B": 14,
             "E": 21,
             "F": 18,
@@ -60,7 +60,7 @@
             "~M": 38.54
         },
         "D": {
-            "label": "Parque Central",
+            "label": "Parque",
             "B": 25,
             "G": 16,
             "~A": 22.78,
@@ -131,7 +131,7 @@
             "~M": 16.55
         },
         "H": {
-            "label": "Zona Industrial",
+            "label": "Indústria",
             "A": 20,
             "I": 7,
             "L": 15,
@@ -149,7 +149,7 @@
             "~M": 20.61
         },
         "I": {
-            "label": "Centro Comercial",
+            "label": "Comércio",
             "B": 25,
             "H": 7,
             "M": 25,
@@ -167,7 +167,7 @@
             "~M": 24.31
         },
         "J": {
-            "label": "Residencial Alphaville",
+            "label": "Res.Grupo5",
             "E": 23,
             "K": 11,
             "M": 31,
@@ -185,7 +185,7 @@
             "~M": 30.19
         },
         "K": {
-            "label": "Condomínio Sol Nascente",
+            "label": "Res.Dijkstra",
             "E": 19,
             "F": 23,
             "J": 11,
@@ -204,7 +204,7 @@
             "~M": 19.45
         },
         "L": {
-            "label": "Terminal Rodoviário",
+            "label": "Rodoviária",
             "A": 11,
             "H": 15,
             "~A": 10.71,
