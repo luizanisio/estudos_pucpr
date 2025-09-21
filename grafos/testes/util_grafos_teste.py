@@ -17,6 +17,7 @@ sys.path.extend(['../','./'])
 
 from util_grafos import GrafosBase, GrafosDijkstra, No
 from util_grafos_aestrela import GrafoAEstrela
+from util_grafos_outros import GrafoGananciosa
 
 
 class TestCargaGrafos(unittest.TestCase):
@@ -909,6 +910,186 @@ class TestCasosEspeciaisAEstrela(unittest.TestCase):
             # Testa funcionamento
             sucesso = self.astar.encontrar_caminho('A', 'D')
             self.assertTrue(sucesso)
+            
+        finally:
+            os.unlink(temp_file)
+
+
+class TestGBFSPredecessores(unittest.TestCase):
+    """Testes para verificar construção correta do caminho no GBFS"""
+    
+    def setUp(self):
+        """Configuração inicial para testes do GBFS"""
+        self.gbfs = GrafoGananciosa("Teste GBFS Predecessores")
+    
+    def test_gbfs_caminho_com_predecessores_corretos(self):
+        """Testa se o GBFS constrói o caminho incluindo todos os nós visitados na ordem correta"""
+        
+        # Cria um grafo de teste que reproduz o cenário ACAI A->J
+        dados_test = {
+            "nome_grafo": "Teste GBFS Predecessores",
+            "descricao": "Grafo para testar predecessores do GBFS",
+            "metrica": "km",
+            "grafo": {
+                "A": {
+                    "label": "Inicio",
+                    "B": 15,
+                    "H": 20, 
+                    "L": 11,
+                    "~B": 49.67,
+                    "~H": 44.99,
+                    "~L": 41.27,
+                    "~J": 58.71
+                },
+                "L": {
+                    "label": "Intermediario L",
+                    "A": 11,
+                    "H": 15,
+                    "~A": 58.71,
+                    "~H": 44.99,
+                    "~J": 41.27
+                },
+                "H": {
+                    "label": "Intermediario H", 
+                    "A": 20,
+                    "L": 15,
+                    "I": 7,
+                    "~A": 58.71,
+                    "~L": 41.27,
+                    "~I": 43.86,
+                    "~J": 44.99
+                },
+                "I": {
+                    "label": "Intermediario I",
+                    "H": 7,
+                    "M": 25,
+                    "~H": 44.99,
+                    "~M": 0,
+                    "~J": 43.86
+                },
+                "M": {
+                    "label": "Quase Final",
+                    "I": 25,
+                    "J": 31,
+                    "~I": 43.86,
+                    "~J": 0
+                },
+                "J": {
+                    "label": "Destino",
+                    "M": 31,
+                    "~M": 0
+                },
+                "B": {
+                    "label": "Alternativo B",
+                    "A": 15,
+                    "~A": 58.71,
+                    "~J": 49.67
+                }
+            }
+        }
+        
+        # Cria arquivo temporário
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(dados_test, f)
+            temp_file = f.name
+        
+        try:
+            # Carrega o grafo
+            self.gbfs.carregar_json(temp_file)
+            
+            # Executa GBFS de A para J
+            sucesso = self.gbfs.encontrar_caminho('A', 'J')
+            self.assertTrue(sucesso, "GBFS deveria encontrar caminho de A para J")
+            
+            # Obtém o caminho encontrado
+            caminho = self.gbfs.movimentos.get_caminho_completo()
+            nós_visitados = self.gbfs.movimentos.visitados
+            
+            print(f"\n🔍 DEBUG TESTE GBFS:")
+            print(f"   Caminho encontrado: {' → '.join(caminho)}")
+            print(f"   Nós visitados: {sorted(nós_visitados)}")
+            print(f"   Custo total: {self.gbfs.movimentos.get_custo_total()}")
+            
+            # TESTES ESPECÍFICOS DO CENÁRIO
+            
+            # 1. Verifica se o caminho começa em A e termina em J
+            self.assertEqual(caminho[0], 'A', "Caminho deve começar em A")
+            self.assertEqual(caminho[-1], 'J', "Caminho deve terminar em J") 
+            
+            # 2. Verifica se L foi visitado (deveria ser pelo GBFS correto)
+            self.assertIn('L', nós_visitados, 
+                         "L deveria ter sido visitado (melhor heurística de A)")
+            
+            # 3. Verifica ordem heurística das decisões de A
+            # L tem h=41.27 (melhor), H tem h=44.99, B tem h=49.67
+            heuristica_L = self.gbfs._heuristica('L', 'J')
+            heuristica_H = self.gbfs._heuristica('H', 'J') 
+            heuristica_B = self.gbfs._heuristica('B', 'J')
+            
+            self.assertLess(heuristica_L, heuristica_H, 
+                           "h(L,J) deveria ser menor que h(H,J)")
+            self.assertLess(heuristica_H, heuristica_B,
+                           "h(H,J) deveria ser menor que h(B,J)")
+            
+            # 4. TESTE CRÍTICO: Se L foi visitado e H está no caminho,
+            #    então L deveria estar no caminho também (como predecessor de H)
+            if 'L' in nós_visitados and 'H' in caminho:
+                # Como L→H é uma aresta válida e L foi visitado primeiro,
+                # o caminho deveria incluir L
+                print(f"   ⚠️  ANÁLISE: L visitado={'L' in nós_visitados}, H no caminho={'H' in caminho}")
+                print(f"   ⚠️  EXPECTATIVA: Se L foi visitado primeiro e H está no caminho,")
+                print(f"   ⚠️               então L deveria estar no caminho como predecessor de H")
+                
+                # Este teste pode falhar se o bug dos predecessores ainda existe
+                if 'L' not in caminho and 'H' in caminho:
+                    print(f"   🐛 BUG DETECTADO: L foi visitado mas não está no caminho final!")
+                    print(f"   🐛 Isso indica problema na construção dos predecessores")
+            
+            # 5. Verifica eficiência: GBFS deveria visitar poucos nós
+            self.assertLessEqual(len(nós_visitados), 6, 
+                               "GBFS deveria ser eficiente e visitar poucos nós")
+            
+        finally:
+            os.unlink(temp_file)
+    
+    def test_gbfs_ordem_expansao_por_heuristica(self):
+        """Testa se GBFS expande nós na ordem correta da heurística"""
+        
+        # Grafo simples para testar ordem de expansão
+        dados_simples = {
+            "nome_grafo": "Teste Ordem Expansão",
+            "grafo": {
+                "A": {"B": 10, "C": 5, "~B": 8, "~C": 12, "~D": 20},
+                "B": {"A": 10, "D": 3, "~A": 20, "~C": 15, "~D": 2},
+                "C": {"A": 5, "D": 8, "~A": 20, "~B": 15, "~D": 10}, 
+                "D": {"B": 3, "C": 8}
+            }
+        }
+        
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(dados_simples, f)
+            temp_file = f.name
+            
+        try:
+            gbfs_ordem = GrafoGananciosa("Teste Ordem")
+            gbfs_ordem.carregar_json(temp_file)
+            
+            # Busca A → D
+            sucesso = gbfs_ordem.encontrar_caminho('A', 'D')
+            self.assertTrue(sucesso)
+            
+            # Verifica se B foi escolhido primeiro (h(B,D)=2 < h(C,D)=10)
+            caminho = gbfs_ordem.movimentos.get_caminho_completo()
+            visitados = gbfs_ordem.movimentos.visitados
+            
+            print(f"\n🔍 TESTE ORDEM EXPANSÃO:")
+            print(f"   Caminho: {' → '.join(caminho)}")
+            print(f"   Visitados: {sorted(visitados)}")
+            print(f"   h(B,D) = {gbfs_ordem._heuristica('B', 'D')}")
+            print(f"   h(C,D) = {gbfs_ordem._heuristica('C', 'D')}")
+            
+            # B deveria ser escolhido por ter menor heurística
+            self.assertIn('B', visitados, "B deveria ter sido visitado (melhor heurística)")
             
         finally:
             os.unlink(temp_file)

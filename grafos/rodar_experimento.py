@@ -18,7 +18,7 @@ from util_grafos_outros import GrafoBFS, GrafoDFS, GrafoGananciosa
 from util_graficos import gerar_graficos
 
 # Configurações do experimento
-ORIGEM, DESTINO = 'A', 'G'
+ORIGEM, DESTINO = 'A', 'J'
 ARQUIVO_GRAFO = 'base_grafos/grafo_acai.json'
 NUM_EXECUCOES = 5  # Número de execuções para calcular média e desvio padrão
 

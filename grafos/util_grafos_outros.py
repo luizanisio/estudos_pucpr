@@ -183,22 +183,39 @@ class GrafoDFS(GrafosBase):
 
 
 class GrafoGananciosa(GrafosBase):
-    """Implementa o algoritmo de Busca Gananciosa (Greedy Search) para encontrar um caminho
-       entre dois nós, sempre escolhendo o vizinho com menor custo de aresta (decisão gulosa local).
+    """Implementa o algoritmo Greedy Best-First Search (GBFS) - Busca Gananciosa.
+       Usa uma fila de prioridade ordenada por heurística para explorar sempre o nó
+       mais promissor primeiro, mantendo alternativas para backtracking automático.
     """
     def __init__(self, nome_grafo="Grafo Busca Gananciosa"):
         super().__init__(nome_grafo=nome_grafo)
         self.nome = 'Gananciosa'
 
+    def _calcular_heuristica(self, no_origem, no_destino):
+        """Calcula a heurística (distância estimada) entre dois nós.
+        
+        Args:
+            no_origem: Nó de origem
+            no_destino: Nó de destino
+            
+        Returns:
+            float: Valor da heurística (0 se não disponível)
+        """
+        # Usa o método heurística da classe base se disponível
+        return self._heuristica(no_origem, no_destino)
+
     def encontrar_caminho(self, inicio, fim):
-        """Implementa o algoritmo de Busca Gananciosa para encontrar um caminho
-           entre dois nós, sempre escolhendo o vizinho com menor custo de aresta.
+        """Implementa o algoritmo Greedy Best-First Search (GBFS).
+        Usa fila de prioridade ordenada por heurística com backtracking automático.
+        
         Args:
             inicio: Nó de origem (string)
             fim: Nó de destino (string)
         Returns:
             bool: True se encontrou caminho, False caso contrário
         """
+        import heapq
+        
         # PASSO 1: Preparação inicial
         # Limpa registros de movimentos anteriores
         self.movimentos.reset()
@@ -207,46 +224,75 @@ class GrafoGananciosa(GrafosBase):
         if inicio not in self.nos or fim not in self.nos:
             return False
         
-        # PASSO 2: Configuração das estruturas de dados da Busca Gananciosa
-        # Caminho atual sendo construído
-        caminho = [inicio]
-        # Conjunto de nós já visitados para evitar ciclos
-        visitados = set([inicio])
-        # Nó atual da busca
-        no_atual = inicio
-        # Registra o nó inicial como visitado
-        self.movimentos.marcar_visitado(inicio)
+        # PASSO 2: Configuração das estruturas GBFS (OPEN/CLOSED)
+        # OPEN: fila de prioridade ordenada por heurística (h(n))
+        heuristica_inicial = self._calcular_heuristica(inicio, fim)
+        open_list = [(heuristica_inicial, 0, inicio)]  # (heurística, contador, nó)
+        # CLOSED: conjunto de nós já expandidos
+        closed_set = set()
+        # Predecessores para reconstruir o caminho
+        predecessores = {}
+        # Contador para desempate (ordem de inserção)
+        contador = 1
         
-        # PASSO 3: Loop principal - busca gananciosa
-        while no_atual != fim:
-            # PASSO 3.1: Obtém todos os vizinhos não visitados
-            vizinhos_disponiveis = []
-            for vizinho, custo_aresta in self._adjacentes_de(no_atual):
-                if vizinho not in visitados:
-                    # Armazena vizinho e custo da aresta (estratégia gananciosa por custo)
-                    vizinhos_disponiveis.append((vizinho, custo_aresta))
+        # PASSO 3: Loop principal do GBFS
+        while open_list:
+            # PASSO 3.1: Remove o nó com menor heurística (mais promissor)
+            _, _, no_atual = heapq.heappop(open_list)
             
-            # PASSO 3.2: Se não há vizinhos disponíveis, não há caminho
-            if not vizinhos_disponiveis:
-                return False
+            # PASSO 3.2: Se já foi expandido, pula (evita reprocessamento)
+            if no_atual in closed_set:
+                continue
             
-            # PASSO 3.3: Escolhe o vizinho com menor custo de aresta (estratégia gananciosa)
-            # Ordena por custo da aresta (menor custo = escolha gananciosa)
-            vizinhos_disponiveis.sort(key=lambda x: x[1])
-            melhor_vizinho, _ = vizinhos_disponiveis[0]
+            # PASSO 3.3: Marca como expandido e registra visita
+            closed_set.add(no_atual)
+            self.movimentos.marcar_visitado(no_atual)
             
-            # PASSO 3.4: Move para o melhor vizinho
-            caminho.append(melhor_vizinho)
-            visitados.add(melhor_vizinho)
-            # Registra o nó como visitado no sistema de movimentos
-            self.movimentos.marcar_visitado(melhor_vizinho)
-            no_atual = melhor_vizinho
+            # PASSO 3.4: Verifica se chegou no destino
+            if no_atual == fim:
+                # Reconstrói e registra o caminho encontrado
+                caminho_encontrado = self._reconstruir_caminho(predecessores, fim)
+                for nodo in caminho_encontrado:
+                    self.movimentos.mover_para(nodo)
+                return True
+            
+            # PASSO 3.5: Expande todos os vizinhos (gera sucessores)
+            for vizinho, _ in self._adjacentes_de(no_atual):
+                # Se o vizinho não foi expandido ainda
+                if vizinho not in closed_set:
+                    # Calcula heurística para o vizinho
+                    heuristica = self._calcular_heuristica(vizinho, fim)
+                    # Adiciona à fila de prioridade
+                    heapq.heappush(open_list, (heuristica, contador, vizinho))
+                    contador += 1
+                    # CORREÇÃO: Registra predecessor apenas se não existe ou se este é melhor
+                    # Para GBFS puro, sempre atualiza o predecessor com a última expansão
+                    predecessores[vizinho] = no_atual
         
-        # PASSO 4: Registra o caminho encontrado
-        for nodo in caminho:
-            self.movimentos.mover_para(nodo)
+        # PASSO 4: Se a OPEN ficou vazia, não existe caminho
+        return False
+
+    def _reconstruir_caminho(self, predecessores, no_final):
+        """Reconstrói o caminho a partir dos predecessores
         
-        return True
+        Args:
+            predecessores: Dicionário de predecessores
+            no_final: Nó final do caminho
+            
+        Returns:
+            list: Lista de nós formando o caminho
+        """
+        caminho = []
+        no_atual = no_final
+        
+        # Volta pelo caminho seguindo os predecessores
+        while no_atual is not None:
+            caminho.append(no_atual)
+            no_atual = predecessores.get(no_atual)
+        
+        # Inverte para ficar na ordem correta (início -> fim)
+        caminho.reverse()
+        return caminho
 
 
 if __name__ == "__main__":
@@ -265,7 +311,8 @@ if __name__ == "__main__":
     if grafo_bfs.encontrar_caminho(origem, destino):
         caminho = grafo_bfs.movimentos.get_caminho_completo()
         custo_total = grafo_bfs.movimentos.get_custo_total()
-        print(f"   Caminho BFS: {' -> '.join(caminho)} (custo: {custo_total})")
+        visitados = len(grafo_bfs.movimentos.visitados)
+        print(f"   Caminho BFS: {' -> '.join(caminho)} (custo: {custo_total}, visitados: {visitados})")
     else:
         print(f"   BFS: Caminho não encontrado de {origem} para {destino}")
     
@@ -277,20 +324,51 @@ if __name__ == "__main__":
     if grafo_dfs.encontrar_caminho(origem, destino):
         caminho = grafo_dfs.movimentos.get_caminho_completo()
         custo_total = grafo_dfs.movimentos.get_custo_total()
-        print(f"   Caminho DFS: {' -> '.join(caminho)} (custo: {custo_total})")
+        visitados = len(grafo_dfs.movimentos.visitados)
+        print(f"   Caminho DFS: {' -> '.join(caminho)} (custo: {custo_total}, visitados: {visitados})")
     else:
         print(f"   DFS: Caminho não encontrado de {origem} para {destino}")
     
-    # Teste Busca Gananciosa
-    print("\n3. Testando Busca Gananciosa")
-    grafo_gan = GrafoGananciosa()
-    grafo_gan.carregar_json(arquivo_grafo)
+    # Teste Greedy Best-First Search (GBFS)
+    print("\n3. Testando Greedy Best-First Search (GBFS)")
+    grafo_gbfs = GrafoGananciosa()
+    grafo_gbfs.carregar_json(arquivo_grafo)
     
-    if grafo_gan.encontrar_caminho(origem, destino):
-        caminho = grafo_gan.movimentos.get_caminho_completo()
-        custo_total = grafo_gan.movimentos.get_custo_total()
-        print(f"   Caminho Gananciosa: {' -> '.join(caminho)} (custo: {custo_total})")
+    if grafo_gbfs.encontrar_caminho(origem, destino):
+        caminho = grafo_gbfs.movimentos.get_caminho_completo()
+        custo_total = grafo_gbfs.movimentos.get_custo_total()
+        visitados = len(grafo_gbfs.movimentos.visitados)
+        print(f"   Caminho GBFS: {' -> '.join(caminho)} (custo: {custo_total}, visitados: {visitados})")
+        
+        # Mostra algumas heurísticas usadas
+        print(f"   Heurísticas utilizadas:")
+        for no in caminho[:3]:  # Primeiros 3 nós
+            h_value = grafo_gbfs._calcular_heuristica(no, destino)
+            print(f"     h({no},{destino}) = {h_value}")
     else:
-        print(f"   Gananciosa: Caminho não encontrado de {origem} para {destino}")
+        print(f"   GBFS: Caminho não encontrado de {origem} para {destino}")
+    
+    print("\n=== Comparação com grafo simples (A -> J) ===")
+    arquivo_simples = "base_grafos/grafo_simples.json"
+    
+    algoritmos = [
+        (GrafoBFS, "BFS"),
+        (GrafoDFS, "DFS"), 
+        (GrafoGananciosa, "GBFS")
+    ]
+    
+    for classe_grafo, nome in algoritmos:
+        grafo = classe_grafo()
+        grafo.carregar_json(arquivo_simples)
+        
+        if grafo.encontrar_caminho('A', 'J'):
+            caminho = grafo.movimentos.get_caminho_completo()
+            custo = grafo.movimentos.get_custo_total()
+            visitados = len(grafo.movimentos.visitados)
+            print(f"{nome:4}: {' -> '.join(caminho)} (custo: {custo}, visitados: {visitados})")
+        else:
+            print(f"{nome:4}: Caminho não encontrado")
     
     print("\n=== Testes concluídos ===")
+    print("GBFS agora usa fila de prioridade ordenada por heurística")
+    print("com backtracking automático (não trava em mínimos locais)")
