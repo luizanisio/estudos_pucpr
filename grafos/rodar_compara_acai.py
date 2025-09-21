@@ -1,5 +1,4 @@
-import sys
-sys.path.extend(['../','./'])
+
 
 from util_grafos import GrafosDijkstra
 from util_grafos_aestrela import GrafoAEstrela
@@ -16,15 +15,12 @@ for alg in [astar, dj, gn]:
     alg.encontrar_caminho('A', 'J')
 
 print('Caminho Dijkstra:', dj.movimentos.get_caminho_completo())
-print('\t visitados:', dj.movimentos.get_caminho_visitas())
-print('Custo Dijkstra:', dj.movimentos.get_custo_total())
-print('\t visitados:', dj.movimentos.get_caminho_visitas())
+print(' - custo Dijkstra:', dj.movimentos.get_custo_total())
+print(' - visitados:', dj.movimentos.get_caminho_visitas())
 print('Caminho A*:', astar.movimentos.get_caminho_completo())
-print('\t visitados:', astar.movimentos.get_caminho_visitas())
-print('Custo A*:', astar.movimentos.get_custo_total())
-print('\t visitados:', astar.movimentos.get_caminho_visitas())
+print(' - custo A*:', astar.movimentos.get_custo_total())
+print(' - visitados:', astar.movimentos.get_caminho_visitas())
 print('Caminho Gananciosa:', gn.movimentos.get_caminho_completo())
-print('\t visitados:', gn.movimentos.get_caminho_visitas())
-print('Custo Gananciosa:', gn.movimentos.get_custo_total())
-print('\t visitados:', gn.movimentos.get_caminho_visitas())
+print(' - custo Gananciosa:', gn.movimentos.get_custo_total())
+print(' - visitados:', gn.movimentos.get_caminho_visitas())
 print()
