@@ -2,18 +2,21 @@ from util_grafos import GrafosBase
 import heapq
 
 class GrafoAEstrela(GrafosBase):
+    """ Implementa o algoritmo A* (A-estrela) para encontrar o caminho mais curto. """
     def __init__(self, nome_grafo="Grafo A*"):
         super().__init__(nome_grafo=nome_grafo)
         self.nome = 'A*'
         
 
     def encontrar_caminho(self, inicio, fim):
-        """Implementa o algoritmo A* (A-estrela) para encontrar o caminho mais
-           curto entre dois nós em um grafo ponderado.
-        Args:
+        """
+        Implementa o algoritmo A* para encontrar o caminho mais curto.
+        
+        Parâmetros:
             inicio: Nó de origem (string)
             fim: Nó de destino (string)
-        Returns:
+            
+        Retorna:
             bool: True se encontrou caminho, False caso contrário
         """
         # PASSO 1: Preparação inicial

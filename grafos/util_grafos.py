@@ -15,10 +15,7 @@ class No():
         )
 
 class GrafosBase:
-    ''' Estrutura base de grafos com suporte a labels e registro de métricas
-        Recebe um nome de grafo e o número de vértices é dinâmico a partir da carga de um 
-        arquivo ou da construção manual.
-    '''
+    """ Estrutura base de grafos com suporte a labels e registro de métricas. """
     def __init__(self, nome_grafo:str = 'Grafo de teste', descricao:str = None):
         self.nome = 'Base'
         self.nome_grafo = nome_grafo
@@ -37,12 +34,7 @@ class GrafosBase:
         self.heuristicas = {}
         
     def criar_no(self, no:No, adjacentes_dict: dict = None):
-        """Cria ou atualiza um nó
-           adjacentes_dict: dicionário de arestas {vértice: peso, ...}
-           Um nó só pode ter adjacentes se já existir no grafo o nó adjacente
-           Dessa forma, a ordem de criação dos nós importa
-           retorna o Nó criado ou atualizado
-        """
+        """ Cria ou atualiza um nó no grafo. """
         # verifica se já existe o nó e substitui
         if no.letra in self.nos:
             self.nos[no.letra] = no.copy()
@@ -62,7 +54,7 @@ class GrafosBase:
         return self.nos[no.letra]
         
     def _get_no(self, no: Union[str, No]):
-        """Retorna o objeto No para uma letra"""
+        """ Retorna o objeto No para uma letra. """
         if no is None:
             return None
         return self.nos.get(no) if isinstance(no, str) else self.nos.get(no.letra)
@@ -97,13 +89,15 @@ class GrafosBase:
         return len(self.nos)
 
     def carregar(self, grafo):
-        ''' carrega um grafo a partir de um dicionário de nós
-            formato: {'A': {'label': 'Centro', 'B':1, 'C': 5}, 'B': {'label': 'Shopping', 'A':1, 'D':3}, ...}
+        """
+        Carrega um grafo a partir de um dicionário de nós.
+        
+        Parâmetros:
+            grafo: Dicionário no formato {'A': {'label': 'Centro', 'B':1, 'C': 5}, ...}
             
-            A carga é feita em duas fases:
-            1. Primeira fase: cria todos os nós (com labels se existirem)
-            2. Segunda fase: cria as adjacências (todos os nós já existem para validação)
-        '''
+        Retorna:
+            None
+        """
         assert isinstance(grafo, dict), "Use apenas o formato dicionário para a chave 'grafo'"
         self._GrafosBase__reset()
         # Primeira fase: criar todos os nós
@@ -156,7 +150,15 @@ class GrafosBase:
                     self.adjacentes.append((letra, destino_str, peso))
 
     def carregar_json(self, arquivo_json):
-        """Carrega um grafo de um arquivo JSON"""
+        """
+        Carrega um grafo de um arquivo JSON.
+        
+        Parâmetros:
+            arquivo_json: Caminho para o arquivo JSON
+            
+        Retorna:
+            dict: Metadados do arquivo JSON (exceto 'grafo')
+        """
         try:
             with open(arquivo_json, 'r', encoding='utf-8') as f:
                 dados = json.load(f)
@@ -252,12 +254,16 @@ class GrafosBase:
         self.movimentos.reset()
 
     def get_nos_visitados(self):
-        """Retorna os nós visitados em formato letras"""
+        """Retorna os nós visitados em formato letras (ordem alfabética)"""
         return list(sorted(self.movimentos.visitados))
 
     def get_nos_visitados_letras(self):
-        """Retorna os nós visitados em formato letras"""
+        """Retorna os nós visitados em formato letras (ordem alfabética)"""
         return list(sorted(self.movimentos.visitados))
+
+    def get_nos_visitados_ordem(self):
+        """Retorna os nós visitados na ordem em que foram visitados"""
+        return self.movimentos.get_caminho_visitas(letras=True)
 
     def limpar_visitas(self):
         """Limpa o registro de visitas"""
@@ -336,14 +342,21 @@ class GrafosBase:
         return (caminho, custo)
 
 class GrafosDijkstra(GrafosBase):
-    ''' vídeo com explicação do algoritmo: https://www.youtube.com/watch?v=CmIQ29cUGiE
-        Implementa o algoritmo de Dijkstra para encontrar o caminho de menor custo entre dois nós.'''
+    """ Implementa o algoritmo de Dijkstra para encontrar o caminho de menor custo. """
     def __init__(self, nome_grafo:str = 'Grafo Dijkstra', descricao:str = None):
         super().__init__(nome_grafo, descricao)
         self.nome = 'Dijkstra'
 
     def encontrar_caminho(self, inicio, fim):
-        """Implementa o algoritmo de Dijkstra e registra os movimentos
+        """
+        Implementa o algoritmo de Dijkstra e registra os movimentos.
+        
+        Parâmetros:
+            inicio: Nó de origem (string)
+            fim: Nó de destino (string)
+            
+        Retorna:
+            bool: True se encontrou caminho, False caso contrário
         """
         self.movimentos.reset()
         
@@ -411,24 +424,18 @@ class GrafosDijkstra(GrafosBase):
         return True
 
 class RegistroVisitas:
-    """
-    Classe para registrar visitas em grafos, incluindo:
-    - Caminho percorrido (sequência de nós visitados)
-    - Custo acumulado durante o percurso
-    - Histórico completo de movimentações
-    - Estatísticas de visita com tempo e recursos
-    RegistroMovimentos é um atributo de GrafosBase e contém referência para ele.
-    """
+    """ Registra visitas em grafos incluindo caminho, custo e estatísticas. """
     def __init__(self, grafo):
         self.grafo = grafo  # Referência ao grafo
         self.reset()
     
     def reset(self):
-        """Reinicia todos os registros de visita"""
+        """ Reinicia todos os registros de visita. """
         self.caminho = []           # Lista de nós visitados
         self.custo_total = 0        # Custo acumulado total
         self.custos_parciais = []   # Lista de custos de cada movimento
         self.visitados = set()      # Set de nós únicos visitados
+        self.visitados_ordem = []   # Lista de nós visitados na ordem das visitas
         self.historico = []         # Lista de (origem, destino, custo, tempo) para cada movimento
         self.posicao_atual = None   # Posição atual no grafo
         self.tempo_inicio = time.time()  # Tempo de início
@@ -461,6 +468,7 @@ class RegistroVisitas:
             # Não resetar nos_expandidos! Pode já ter nós marcados durante a busca
             if letra not in self.visitados:
                 self.visitados.add(letra)
+                self.visitados_ordem.append(letra)
                 self.nos_expandidos += 1
             # Registra no histórico como ponto de partida
             self.historico.append((None, letra, 0, tempo_atual - self.tempo_inicio))
@@ -491,6 +499,7 @@ class RegistroVisitas:
             
             if letra not in self.visitados:
                 self.visitados.add(letra)
+                self.visitados_ordem.append(letra)
                 self.nos_expandidos += 1
             
             # Registra no histórico
@@ -499,6 +508,7 @@ class RegistroVisitas:
         # Atualiza estimativa de memória (aproximada)
         self.memoria_usada = (sys.getsizeof(self.caminho) +
                               sys.getsizeof(self.visitados) +
+                              sys.getsizeof(self.visitados_ordem) +
                               sys.getsizeof(self.historico) +
                               sys.getsizeof(self.custos_parciais) +
                               sys.getsizeof(self.tempos_movimentos))
@@ -510,6 +520,7 @@ class RegistroVisitas:
         letra = letra.upper()
         if letra not in self.visitados:
             self.visitados.add(letra)
+            self.visitados_ordem.append(letra)
             self.nos_expandidos += 1
     
     def foi_visitado(self, no):
@@ -524,6 +535,13 @@ class RegistroVisitas:
         if letras:
             return self.caminho.copy()
         return [self.grafo._get_no(letra) for letra in self.caminho if self.grafo._get_no(letra)]
+
+    def get_caminho_visitas(self, letras = True):
+        """Retorna o caminho das visitas feitas na ordem em que foram visitadas"""
+        if letras:
+            return self.visitados_ordem.copy()
+        return [self.grafo._get_no(letra) for letra in self.visitados_ordem
+                if self.grafo._get_no(letra)]
     
     def get_custo_total(self):
         """Retorna o custo total acumulado"""
@@ -585,7 +603,7 @@ class RegistroVisitas:
         
         if not caminho_str:
             caminho_str = 'Nenhum'
-        return caminho_str      
+        return caminho_str
     
     def caminho_descrito_heuristica_vs_real(self, usar_labels = True):
         ''' Retorna uma descrição, passo a passo, do custo real até o final vs custo heurístico
@@ -725,7 +743,7 @@ class RegistroVisitas:
 
 if __name__ == "__main__":
     print("=== Teste simples da classe ===\n")
-    from util_grafos_exemplos import get_g_youtube
+    from testes.util_grafos_exemplos import get_g_youtube
     
     # Cria um grafo Dijkstra
     grafo = get_g_youtube()

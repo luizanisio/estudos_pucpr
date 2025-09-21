@@ -12,24 +12,22 @@ from util_grafos import GrafosBase
 
 
 class GeradorGraficos:
-    """Classe responsável pela geração de gráficos comparativos de algoritmos."""
+    """ Gera gráficos comparativos de algoritmos de grafos. """
     
     def __init__(self):
-        """Inicializa o gerador de gráficos."""
         pass
     
-    def gerar_graficos_comparativos(self, df, arquivo_grafo, origem, destino, pasta_saida="resultados"):
-        """Gera gráficos comparativos das métricas coletadas.
-        
-        Args:
+    def gerar_graficos_comparativos(self, df, arquivo_grafo, origem, destino, pasta_saida="resultados", mostrar = False):
+        """
+        Gera gráficos comparativos das métricas coletadas.
+        Parâmetros:
             df: DataFrame com os resultados dos algoritmos
             arquivo_grafo: Caminho do arquivo JSON do grafo
             origem: Nó de origem (string)
             destino: Nó de destino (string)
             pasta_saida: Pasta onde salvar os gráficos (padrão: "resultados")
-            
-        Returns:
-            str: Caminho do arquivo de imagem gerado, ou None se não foi possível gerar
+        Retorna:
+            str: Caminho do arquivo de imagem gerado ou None se não foi possível gerar
         """
         # Filtra apenas algoritmos que encontraram caminho
         df_sucesso = df[df['encontrou_caminho'] == True].copy()
@@ -55,21 +53,13 @@ class GeradorGraficos:
         nome_arquivo_grafico = f"{pasta_saida}/{nome_grafo}_{origem}_{destino}_graficos.png"
         plt.savefig(nome_arquivo_grafico, dpi=300, bbox_inches='tight')
         print(f"Gráficos salvos em: {nome_arquivo_grafico}")
-        plt.show()
+        if mostrar:
+            plt.show()
         
         return nome_arquivo_grafico
         
     def _titulo_com_rotulos(self, arquivo_grafo, origem, destino):
-        """Obtém o título incluindo rótulos dos nós quando disponíveis.
-        
-        Args:
-            arquivo_grafo: Caminho do arquivo JSON do grafo
-            origem: Nó de origem
-            destino: Nó de destino
-            
-        Returns:
-            str: Subtítulo formatado com ou sem rótulos
-        """
+        """ Obtém o título incluindo rótulos dos nós quando disponíveis. """
         try:
             # Carrega o grafo para obter os rótulos dos nós
             grafo_temp = GrafosBase()
@@ -94,36 +84,18 @@ class GeradorGraficos:
             return f"({origem} → {destino})"
     
     def _grafico_custo_total(self, ax, df_sucesso):
-        """Gera o gráfico de custo total do caminho.
-        
-        Args:
-            ax: Eixo do matplotlib para o gráfico
-            df_sucesso: DataFrame filtrado com algoritmos que encontraram caminho
-        """
         ax.bar(df_sucesso['algoritmo'], df_sucesso['custo_total'], color='skyblue')
         ax.set_title('Custo Total do Caminho')
         ax.set_ylabel('Custo')
         ax.tick_params(axis='x', rotation=45)
     
     def _grafico_nos_visitados(self, ax, df_sucesso):
-        """Gera o gráfico de número de nós visitados.
-        
-        Args:
-            ax: Eixo do matplotlib para o gráfico
-            df_sucesso: DataFrame filtrado com algoritmos que encontraram caminho
-        """
         ax.bar(df_sucesso['algoritmo'], df_sucesso['num_nos_visitados'], color='lightgreen')
         ax.set_title('Número de Nós Visitados')
         ax.set_ylabel('Nós Visitados')
         ax.tick_params(axis='x', rotation=45)
     
     def _grafico_tempo_execucao(self, ax, df_sucesso):
-        """Gera o gráfico de tempo de execução com barras de erro.
-        
-        Args:
-            ax: Eixo do matplotlib para o gráfico
-            df_sucesso: DataFrame filtrado com algoritmos que encontraram caminho
-        """
         ax.bar(df_sucesso['algoritmo'], df_sucesso['tempo_execucao_medio'], 
                yerr=df_sucesso['tempo_desvio_padrao'], color='coral', capsize=5)
         ax.set_title('Tempo de Execução Médio')
@@ -131,32 +103,16 @@ class GeradorGraficos:
         ax.tick_params(axis='x', rotation=45)
     
     def _grafico_tamanho_caminho(self, ax, df_sucesso):
-        """Gera o gráfico de tamanho do caminho (número de nós).
-        
-        Args:
-            ax: Eixo do matplotlib para o gráfico
-            df_sucesso: DataFrame filtrado com algoritmos que encontraram caminho
-        """
         ax.bar(df_sucesso['algoritmo'], df_sucesso['num_nos_caminho'], color='gold')
         ax.set_title('Tamanho do Caminho (Número de Nós)')
         ax.set_ylabel('Número de Nós')
         ax.tick_params(axis='x', rotation=45)
 
 
-def gerar_graficos(df, arquivo_grafo, origem, destino):
-    """Função de conveniência para manter compatibilidade com código existente.
-    
-    Args:
-        df: DataFrame com os resultados
-        arquivo_grafo: Nome do arquivo do grafo
-        origem: Nó de origem  
-        destino: Nó de destino
-        
-    Returns:
-        str: Caminho do arquivo gerado ou None
-    """
+def gerar_graficos(df, arquivo_grafo, origem, destino, mostrar = False):
+    """ Função de conveniência para manter compatibilidade com código existente. """
     gerador = GeradorGraficos()
-    return gerador.gerar_graficos_comparativos(df, arquivo_grafo, origem, destino)
+    return gerador.gerar_graficos_comparativos(df, arquivo_grafo, origem, destino, mostrar =mostrar)
 
 
 if __name__ == "__main__":

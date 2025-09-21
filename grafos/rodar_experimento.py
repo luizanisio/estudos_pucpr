@@ -16,6 +16,7 @@ from util_grafos import GrafosDijkstra
 from util_grafos_aestrela import GrafoAEstrela
 from util_grafos_outros import GrafoBFS, GrafoDFS, GrafoGananciosa
 from util_graficos import gerar_graficos
+from util_visualizacao import VisualizacaoGrafo
 
 # Configurações do experimento
 ORIGEM, DESTINO = 'A', 'J'
@@ -54,6 +55,12 @@ def executar_algoritmo(classe_grafo, nome_algoritmo, arquivo_grafo, origem, dest
         caminho = grafo.movimentos.get_caminho_completo()
         custo_total = grafo.movimentos.get_custo_total()
         
+        arq_vis = nome_arquivo_visualizacao(arquivo_grafo, nome_algoritmo, origem, destino)
+        if not os.path.isfile(arq_vis):
+            # evita que várias rodadas gerem a mesma visualização
+            viz = VisualizacaoGrafo(grafo, f"{nome_algoritmo}")
+            viz.gerar_grafo_visual(arq_vis, origem, destino)
+        
         return {
             'algoritmo': nome_algoritmo,
             'origem': origem,
@@ -81,6 +88,12 @@ def executar_algoritmo(classe_grafo, nome_algoritmo, arquivo_grafo, origem, dest
             'tempo_execucao': tempo_execucao,
             'nos_expandidos': 0
         }
+
+def nome_arquivo_visualizacao(arquivo_grafo, nome_algoritmo, origem, destino):
+    """Gera o nome do arquivo de visualização baseado no algoritmo e nós.
+       retorna str: Nome do arquivo de visualização
+    """
+    return f"./resultados/{os.path.splitext(os.path.basename(arquivo_grafo))[0]}_{nome_algoritmo}_{origem}_{destino}.html"
 
 def executar_experimento_completo(arquivo_grafo, origem, destino, num_execucoes=5):
     """Executa todos os algoritmos múltiplas vezes e calcula estatísticas.
@@ -116,6 +129,9 @@ def executar_experimento_completo(arquivo_grafo, origem, destino, num_execucoes=
         execucoes = []
         tempos = []
         
+        arq_vis = nome_arquivo_visualizacao(arquivo_grafo, nome_algoritmo, origem, destino)
+        if os.path.isfile(arq_vis):
+            os.remove(arq_vis)  # remove arquivo antigo para evitar confusão
         # Executa o algoritmo NUM_EXECUCOES vezes
         for i in range(num_execucoes):
             resultado = executar_algoritmo(classe_grafo, nome_algoritmo, arquivo_grafo, origem, destino)
@@ -190,7 +206,7 @@ def main():
     arquivo_csv = salvar_csv(df_resultados, ARQUIVO_GRAFO, ORIGEM, DESTINO)
     
     # Gera gráficos comparativos
-    gerar_graficos(df_resultados, ARQUIVO_GRAFO, ORIGEM, DESTINO)
+    gerar_graficos(df_resultados, ARQUIVO_GRAFO, ORIGEM, DESTINO, mostrar=False)
     
     # Imprime resumo final
     print("\n=== RESUMO DOS RESULTADOS ===")
@@ -200,4 +216,9 @@ def main():
     print(f"Arquivo CSV: {arquivo_csv}")
 
 if __name__ == "__main__":
+    inicio = time.time()
     main()
+    print('|' * 80)
+    print(f'Tempo de geração do experimento: {time.time() - inicio:.2f} segundos')
+    
+    print("\nObrigado por utilizar o framework de experimentos de grafos do grupo 5!")    

@@ -2,20 +2,20 @@ from util_grafos import GrafosBase
 from collections import deque
 
 class GrafoBFS(GrafosBase):
-    """Implementa o algoritmo BFS (Busca em Largura) para encontrar um caminho
-       entre dois nós, explorando nível por nível.
-    """
+    """ Implementa o algoritmo BFS (Busca em Largura) para encontrar caminho entre nós. """
     def __init__(self, nome_grafo="Grafo BFS"):
         super().__init__(nome_grafo=nome_grafo)
         self.nome = 'BFS'
 
     def encontrar_caminho(self, inicio, fim):
-        """Implementa o algoritmo BFS (Busca em Largura) para encontrar um caminho
-           entre dois nós.
-        Args:
+        """
+        Implementa o algoritmo BFS para encontrar caminho entre dois nós.
+        
+        Parâmetros:
             inicio: Nó de origem (string)
             fim: Nó de destino (string)
-        Returns:
+            
+        Retorna:
             bool: True se encontrou caminho, False caso contrário
         """
         # PASSO 1: Preparação inicial
@@ -92,20 +92,20 @@ class GrafoBFS(GrafosBase):
 
 
 class GrafoDFS(GrafosBase):
-    """Implementa o algoritmo DFS (Busca em Profundidade) para encontrar um caminho
-       entre dois nós, explorando o máximo possível antes de retroceder.
-    """
+    """ Implementa o algoritmo DFS (Busca em Profundidade) para encontrar caminho entre nós. """
     def __init__(self, nome_grafo="Grafo DFS"):
         super().__init__(nome_grafo=nome_grafo)
         self.nome = 'DFS'
 
     def encontrar_caminho(self, inicio, fim):
-        """Implementa o algoritmo DFS (Busca em Profundidade) para encontrar um caminho
-           entre dois nós.
-        Args:
+        """
+        Implementa o algoritmo DFS para encontrar caminho entre dois nós.
+        
+        Parâmetros:
             inicio: Nó de origem (string)
             fim: Nó de destino (string)
-        Returns:
+            
+        Retorna:
             bool: True se encontrou caminho, False caso contrário
         """
         # PASSO 1: Preparação inicial
@@ -183,35 +183,24 @@ class GrafoDFS(GrafosBase):
 
 
 class GrafoGananciosa(GrafosBase):
-    """Implementa o algoritmo Greedy Best-First Search (GBFS) - Busca Gananciosa.
-       Usa uma fila de prioridade ordenada por heurística para explorar sempre o nó
-       mais promissor primeiro, mantendo alternativas para backtracking automático.
-    """
+    """ Implementa o algoritmo Greedy Best-First Search (Busca Gananciosa). """
     def __init__(self, nome_grafo="Grafo Busca Gananciosa"):
         super().__init__(nome_grafo=nome_grafo)
         self.nome = 'Gananciosa'
 
     def _calcular_heuristica(self, no_origem, no_destino):
-        """Calcula a heurística (distância estimada) entre dois nós.
-        
-        Args:
-            no_origem: Nó de origem
-            no_destino: Nó de destino
-            
-        Returns:
-            float: Valor da heurística (0 se não disponível)
-        """
         # Usa o método heurística da classe base se disponível
         return self._heuristica(no_origem, no_destino)
 
     def encontrar_caminho(self, inicio, fim):
-        """Implementa o algoritmo Greedy Best-First Search (GBFS).
-        Usa fila de prioridade ordenada por heurística com backtracking automático.
+        """
+        Implementa o algoritmo Greedy Best-First Search.
         
-        Args:
+        Parâmetros:
             inicio: Nó de origem (string)
             fim: Nó de destino (string)
-        Returns:
+            
+        Retorna:
             bool: True se encontrou caminho, False caso contrário
         """
         import heapq
