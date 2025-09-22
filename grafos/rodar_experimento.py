@@ -72,7 +72,8 @@ def executar_algoritmo(classe_grafo, nome_algoritmo, arquivo_grafo, origem, dest
             'num_nos_visitados': len(grafo.movimentos.visitados),
             'num_iteracoes': estatisticas.get('iteracoes', 0),
             'tempo_execucao': tempo_execucao,
-            'nos_expandidos': estatisticas.get('nos_expandidos', 0)
+            'nos_expandidos': estatisticas.get('nos_expandidos', 0),
+            'consumo_memoria': estatisticas.get('memoria_usada_bytes', 0)
         }
     else:
         return {
@@ -86,7 +87,8 @@ def executar_algoritmo(classe_grafo, nome_algoritmo, arquivo_grafo, origem, dest
             'num_nos_visitados': 0,
             'num_iteracoes': 0,
             'tempo_execucao': tempo_execucao,
-            'nos_expandidos': 0
+            'nos_expandidos': 0,
+            'consumo_memoria': 0
         }
 
 def nome_arquivo_visualizacao(arquivo_grafo, nome_algoritmo, origem, destino):
@@ -128,6 +130,7 @@ def executar_experimento_completo(arquivo_grafo, origem, destino, num_execucoes=
         
         execucoes = []
         tempos = []
+        memorias = []
         
         arq_vis = nome_arquivo_visualizacao(arquivo_grafo, nome_algoritmo, origem, destino)
         if os.path.isfile(arq_vis):
@@ -137,15 +140,22 @@ def executar_experimento_completo(arquivo_grafo, origem, destino, num_execucoes=
             resultado = executar_algoritmo(classe_grafo, nome_algoritmo, arquivo_grafo, origem, destino)
             execucoes.append(resultado)
             tempos.append(resultado['tempo_execucao'])
+            memorias.append(resultado['consumo_memoria'])
         
         # Calcula estatísticas de tempo (que pode variar entre execuções)
         tempo_medio = statistics.mean(tempos)
         tempo_desvio = statistics.stdev(tempos) if len(tempos) > 1 else 0
         
+        # Calcula estatísticas de memória
+        memoria_media = statistics.mean(memorias)
+        memoria_desvio = statistics.stdev(memorias) if len(memorias) > 1 else 0
+        
         # Usa os dados da primeira execução como base (caminho, custo, etc. são determinísticos)
         resultado_base = execucoes[0].copy()
         resultado_base['tempo_execucao_medio'] = tempo_medio
         resultado_base['tempo_desvio_padrao'] = tempo_desvio
+        resultado_base['consumo_memoria_medio'] = memoria_media
+        resultado_base['consumo_memoria_desvio_padrao'] = memoria_desvio
         resultado_base['num_execucoes'] = num_execucoes
         
         resultados.append(resultado_base)
@@ -156,6 +166,7 @@ def executar_experimento_completo(arquivo_grafo, origem, destino, num_execucoes=
             print(f"  Custo: {resultado_base['custo_total']}")
             print(f"  Nós visitados: {resultado_base['num_nos_visitados']}")
             print(f"  Tempo médio: {tempo_medio:.6f}s (±{tempo_desvio:.6f}s)")
+            print(f"  Memória média: {memoria_media:.0f} bytes (±{memoria_desvio:.0f} bytes)")
         else:
             print(f"  Caminho não encontrado")
         print()
@@ -226,7 +237,9 @@ def main():
         
         # Imprime resumo final
         print("\n=== RESUMO DOS RESULTADOS ===")
-        print(df_resultados[['algoritmo', 'encontrou_caminho', 'custo_total', 'num_nos_visitados', 'tempo_execucao_medio']].to_string(index=False))
+        colunas_resumo = ['algoritmo', 'encontrou_caminho', 'custo_total', 'num_nos_visitados', 
+                          'tempo_execucao_medio', 'consumo_memoria_medio']
+        print(df_resultados[colunas_resumo].to_string(index=False))
         
         print(f"\n=== EXPERIMENTO CONCLUÍDO ===")
         print(f"Arquivo CSV: {arquivo_csv}")
