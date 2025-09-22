@@ -1,0 +1,6 @@
+algoritmo,origem,destino,encontrou_caminho,caminho,custo_total,num_nos_caminho,num_nos_visitados,num_iteracoes,tempo_execucao,nos_expandidos,consumo_memoria,tempo_execucao_medio,tempo_desvio_padrao,consumo_memoria_medio,consumo_memoria_desvio_padrao,num_execucoes
+BFS,H,J,True,H -[7.00]-> I -[25.00]-> M -[31.00]-> J,63,4,10,3,7.62939453125e-05,10,1264,4.57763671875e-05,1.7174414123012546e-05,1264,0.0,5
+DFS,H,J,True,H -[7.00]-> I -[25.00]-> B -[14.00]-> C -[18.00]-> F -[23.00]-> K -[11.00]-> J,98,7,10,6,7.081031799316406e-05,10,1392,5.469322204589844e-05,1.0599039989292185e-05,1392,0.0,5
+B.Gananciosa,H,J,True,H -[7.00]-> I -[25.00]-> M -[31.00]-> J,63,4,5,3,4.220008850097656e-05,5,1200,3.461837768554687e-05,7.151365180793732e-06,1200,0.0,5
+AEstrela,H,J,True,H -[r:7.00+56.00 | h:7.00+43.86]-> I -[r:25.00+31.00 | h:25.00+30.19]-> M -[r:31.00 | h:30.19]-> J,63,4,6,3,3.62396240234375e-05,6,1200,3.7670135498046875e-05,5.102380409010099e-06,1200,0.0,5
+Dijkstra,H,J,True,H -[7.00]-> I -[25.00]-> M -[31.00]-> J,63,4,11,3,5.245208740234375e-05,11,1264,5.121231079101563e-05,2.6836656218061847e-06,1264,0.0,5
