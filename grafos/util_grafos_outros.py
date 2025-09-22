@@ -1,6 +1,9 @@
 from util_grafos import GrafosBase
 from collections import deque
 
+
+# https://medium.com/@anwarhermuche/m%C3%A9todos-de-busca-em-grafos-bfs-dfs-cf17761a0dd9
+
 class GrafoBFS(GrafosBase):
     """ Implementa o algoritmo BFS (Busca em Largura) para encontrar caminho entre nós. """
     def __init__(self, nome_grafo="Grafo BFS"):

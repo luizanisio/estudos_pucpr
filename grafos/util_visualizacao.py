@@ -2,7 +2,7 @@
 Classe que implementa a geração do grafo visual com nós visitados e nós do caminho final.
 '''
 
-from util_grafos import GrafosDijkstra, RegistroVisitas
+from util_grafos import GrafosDijkstra, RegistroVisitas, GrafosBase
 from util_grafos_outros import GrafoBFS, GrafoDFS, GrafoGananciosa
 from util_grafos_aestrela import GrafoAEstrela
 import os
@@ -23,8 +23,8 @@ def conferir_pyvis():
 
 class VisualizacaoGrafo:
     """ Gera visualizações interativas de grafos com pyvis. """
-    
-    def __init__(self, grafo, titulo="Visualização do Grafo"):
+
+    def __init__(self, grafo:GrafosBase, titulo="Visualização do Grafo"):
         self.titulo = titulo
         self.grafo = grafo
         self.registro = grafo.movimentos
@@ -93,9 +93,17 @@ class VisualizacaoGrafo:
 
             # Salva o arquivo
             net.save_graph(nome_arquivo_html)
-            self.remover_primeiro_h1_pyvis(nome_arquivo_html,
-                                           incluit_rodape=f'Visitas: {self.registro.get_caminho_visitas()} ')
             
+            #rodapé
+            caminho_heuristica = f'Caminho real vs heurística: {self.grafo.movimentos.caminho_descrito_heuristica_vs_real()} <hr>' if isinstance(self.grafo, GrafoAEstrela) else ''
+            custo = self.grafo.movimentos.get_custo_total()
+            rodape = ( f'Melhor caminho: {self.grafo.movimentos.caminho_descrito()} <hr>' 
+                       f'{caminho_heuristica}'
+                       f'Visitas: {self.registro.get_caminho_visitas()} <hr>'
+                       f'Custo total: {custo:.2f} ')
+            self.remover_primeiro_h1_pyvis(nome_arquivo_html,
+                                           incluir_rodape=rodape)
+
             print(f"✅ Grafo visual salvo em: {nome_arquivo_html}")
             return nome_arquivo_html
 
@@ -221,16 +229,16 @@ class VisualizacaoGrafo:
                 return True
         return False
 
-    def remover_primeiro_h1_pyvis(self, caminho_html: str, incluit_rodape:str):
+    def remover_primeiro_h1_pyvis(self, caminho_html: str, incluir_rodape:str):
         """ Remove a primeira ocorrência do título <h1> gerado automaticamente pelo pyvis.
         """
         with open(caminho_html, 'r', encoding='utf-8') as f:
             html = f.read()
         # remove só a 1ª ocorrência do <center><h1>...</h1></center>
         html = re.sub(r'<center>\s*<h1>.*?</h1>\s*</center>', '', html, count=1, flags=re.DOTALL)
-        if incluit_rodape:
+        if incluir_rodape:
             rodape = ('<div style="text-align: left;">'
-                      f'{incluit_rodape}</div>')
+                      f'{incluir_rodape}</div>')
             html = html.replace('</body>', rodape + '</body>')
         with open(caminho_html, 'w', encoding='utf-8') as f:
             f.write(html)
