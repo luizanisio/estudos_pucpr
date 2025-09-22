@@ -109,7 +109,7 @@ class VisualizacaoGrafo:
 
         except Exception as e:
             print(f"❌ Erro ao gerar grafo visual: {e}")
-            return None
+            raise
 
     def _adicionar_nos_e_arestas(self, net):
         """ Adiciona nós e arestas à rede com cores distintivas. """
@@ -163,6 +163,12 @@ class VisualizacaoGrafo:
                 size=tamanho,
                 font={'size': 14, 'face': 'arial', 'color': cor_fonte, 'bold': True}
             )
+            
+            if self.grafo.coordenadas and letra in self.grafo.coordenadas:
+                x, y = self.grafo.coordenadas[letra]
+                net.nodes[-1]['x'] = x
+                net.nodes[-1]['y'] = y
+                net.nodes[-1]['fixed'] = {'x': True, 'y': True}
 
         # Adiciona arestas (evita duplicatas mantendo apenas uma aresta por par de nós)
         arestas_adicionadas = set()
@@ -232,8 +238,14 @@ class VisualizacaoGrafo:
     def remover_primeiro_h1_pyvis(self, caminho_html: str, incluir_rodape:str):
         """ Remove a primeira ocorrência do título <h1> gerado automaticamente pelo pyvis.
         """
-        with open(caminho_html, 'r', encoding='utf-8') as f:
-            html = f.read()
+        try:
+            # se der erro de encode, tenta sem definir o encode
+            with open(caminho_html, 'r', encoding='utf-8') as f:
+                html = f.read()
+        except Exception:
+            with open(caminho_html, 'r') as f:
+                html = f.read()
+            
         # remove só a 1ª ocorrência do <center><h1>...</h1></center>
         html = re.sub(r'<center>\s*<h1>.*?</h1>\s*</center>', '', html, count=1, flags=re.DOTALL)
         if incluir_rodape:

@@ -112,7 +112,7 @@ def executar_experimento_completo(arquivo_grafo, origem, destino, num_execucoes=
         (GrafoBFS, 'BFS'),
         (GrafoDFS, 'DFS'),
         (GrafoGananciosa, 'B.Gananciosa'),
-        (GrafoAEstrela, 'A*'),
+        (GrafoAEstrela, 'AEstrela'),
         (GrafosDijkstra, 'Dijkstra')
     ]
     

@@ -26,12 +26,14 @@ class GrafosBase:
         self.nos = {}  # Dicionário para armazenar objetos No {letra: No}
         self.movimentos = RegistroVisitas(self)  # Sistema de registro de visitas
         self.heuristicas = {}  # Dicionário para armazenar heurísticas {(origem, destino): custo_estimado}
+        self.coordenadas = None # Coordenadas opcionais para visualização {letra: (x, y)}
         
     def __reset(self):
         self.adjacentes = []
         self.nos = {}
         self.movimentos = RegistroVisitas(self)
         self.heuristicas = {}
+        self.coordenadas = None
         
     def criar_no(self, no:No, adjacentes_dict: dict = None):
         """ Cria ou atualiza um nó no grafo. """
@@ -88,7 +90,7 @@ class GrafosBase:
     def __len__(self):
         return len(self.nos)
 
-    def carregar(self, grafo):
+    def carregar(self, grafo, coordenadas: dict = None):
         """
         Carrega um grafo a partir de um dicionário de nós.
         
@@ -116,6 +118,7 @@ class GrafosBase:
             no = No(letra=letra, label=label)
             self.nos[letra] = no
         
+        self.coordenadas = coordenadas if isinstance(coordenadas, dict) and any(coordenadas) else None
         # Segunda fase: criar as adjacências e heurísticas
         # Agora não remove adjacências antigas, apenas adiciona as novas
         for letra, dados_no in sorted(grafo.items(), key=lambda x: x[0]):
@@ -160,11 +163,16 @@ class GrafosBase:
             dict: Metadados do arquivo JSON (exceto 'grafo')
         """
         try:
-            with open(arquivo_json, 'r', encoding='utf-8') as f:
-                dados = json.load(f)
+            # tenta carregar utf8 (se der erro de encode, tenta sem definir o encode)
+            try:
+                with open(arquivo_json, 'r', encoding='utf-8') as f:
+                    dados = json.load(f)
+            except Exception:
+                with open(arquivo_json, 'r') as f:
+                    dados = json.load(f)
                         
             # Carrega o grafo
-            self.carregar(dados['grafo'])
+            self.carregar(dados['grafo'], coordenadas=dados.get('coordenadas', None))
             
             # Carrega metadados se existirem
             if 'metrica' in dados:
@@ -743,7 +751,7 @@ class RegistroVisitas:
 
 if __name__ == "__main__":
     print("=== Teste simples da classe ===\n")
-    from testes.util_grafos_exemplos import get_g_youtube
+    from testes.exemplos import get_g_youtube
     
     # Cria um grafo Dijkstra
     grafo = get_g_youtube()
